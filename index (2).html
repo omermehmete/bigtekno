@@ -1,0 +1,1652 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="BigTekno: bilişim teknolojileri ve yazılım için canlı ders, ödev, test ve 3D oyun platformu.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>BigTekno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: kontrol paneli — giriş ekranı, yapışkan üst bar, sekmeli bölümler, devre ızgarası zemin, tam ekran oyun katmanı */
+:root{
+  --bg:#07101c; --panel:#0d1a2b; --panel2:#12233a; --line:#1e3553; --line2:#2a4a70;
+  --fg:#e3edf9; --muted:#8ea3bf; --cyan:#3fdcf2; --cyan-d:#0f5866;
+  --easy:#4ade80; --mid:#fbbf24; --hard:#f472b6; --bad:#fb7185;
+  --f-disp:"Chakra Petch","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.55;min-height:100%;
+  background-image:linear-gradient(rgba(63,220,242,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(63,220,242,.045) 1px,transparent 1px);
+  background-size:32px 32px;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.inner{max-width:1120px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-disp);text-wrap:balance;margin:0;letter-spacing:.01em}
+h2{font-size:1.6rem;font-weight:700}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0}
+a{color:var(--cyan)}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(7,16,28,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .inner{display:flex;align-items:center;gap:16px 20px;padding-block:12px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--f-disp);font-weight:700;font-size:1.35rem;letter-spacing:.06em}
+.logo .chip{font-family:var(--f-mono);font-size:.75rem;color:var(--bg);background:var(--cyan);padding:3px 6px;border-radius:3px;letter-spacing:0}
+.logo b{color:var(--cyan);font-weight:700}
+nav{display:flex;gap:4px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none}
+nav button{font-family:var(--f-disp);font-weight:600;font-size:.92rem;letter-spacing:.04em;text-transform:uppercase;background:none;border:1px solid transparent;color:var(--muted);padding:7px 12px;border-radius:4px;cursor:pointer;white-space:nowrap}
+nav button:hover{color:var(--fg)}
+nav button[aria-current="page"]{color:var(--cyan);border-color:var(--cyan-d);background:rgba(63,220,242,.07)}
+.who{display:flex;align-items:center;gap:10px;font-size:.85rem}
+.who .u{font-family:var(--f-mono)}
+.role{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:3px;border:1px solid currentColor}
+.role.t{color:var(--mid)} .role.s{color:var(--easy)}
+
+main{padding-block:28px 56px}
+section.view{display:grid;gap:22px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;color:var(--cyan);letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.sub{color:var(--muted);max-width:62ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:.84rem}
+.notice{border:1px dashed var(--mid);color:var(--fg);background:rgba(251,191,36,.06);border-radius:6px;padding:12px 14px;font-size:.9rem}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:var(--f-disp);font-weight:600;font-size:.9rem;letter-spacing:.03em;padding:8px 14px;border-radius:4px;border:1px solid var(--line2);background:var(--panel2);color:var(--fg);cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--cyan)}
+.btn.pri{background:var(--cyan);color:#04121a;border-color:var(--cyan)}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.ghost{background:none}
+.btn.del{color:var(--bad);background:none;border-color:transparent}
+.btn.del.arm{border-color:var(--bad)}
+.btn.sm{padding:5px 10px;font-size:.8rem}
+.btn:disabled{opacity:.5;cursor:wait}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+form .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.f{display:grid;gap:5px;min-width:0}
+.f.wide{grid-column:1/-1}
+label{font-size:.78rem;font-family:var(--f-mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line2);border-radius:4px;padding:8px 10px;width:100%;min-width:0}
+input:focus,select:focus{border-color:var(--cyan);outline:none}
+.err{color:var(--bad);font-size:.85rem}
+.hint{font-size:.8rem;color:var(--muted)}
+@media (max-width:640px){form .fields{grid-template-columns:1fr}}
+
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:99px;border:1px solid currentColor}
+.pill.live{color:var(--bad)} .pill.live::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;animation:blink 1s infinite}
+.pill.soon{color:var(--cyan)} .pill.done{color:var(--muted)}
+.lv-kolay{color:var(--easy)} .lv-orta{color:var(--mid)} .lv-zor{color:var(--hard)}
+@keyframes blink{50%{opacity:.25}}
+
+/* giriş ekranı */
+.auth{min-height:calc(100vh - 80px);display:grid;place-items:center;padding-block:32px}
+.authbox{width:100%;max-width:440px;display:grid;gap:18px}
+.authbox .logo{font-size:2rem;justify-content:center}
+.tagline{text-align:center;color:var(--muted);font-size:.92rem}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line2);border-radius:6px;overflow:hidden}
+.seg button{font-family:var(--f-disp);font-weight:600;font-size:.95rem;letter-spacing:.03em;padding:10px;background:var(--bg);color:var(--muted);border:0;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--panel2);color:var(--cyan)}
+.seg button+button{border-left:1px solid var(--line2)}
+.rolepick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rolepick label{display:grid;gap:2px;text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:.85rem;color:var(--muted);border:1px solid var(--line2);border-radius:6px;padding:12px;cursor:pointer;background:var(--bg)}
+.rolepick label b{font-family:var(--f-disp);font-size:1rem;color:var(--fg)}
+.rolepick input{position:absolute;opacity:0;width:1px;height:1px}
+.rolepick input:checked+label{border-color:var(--cyan);background:rgba(63,220,242,.08)}
+.rolepick input:focus-visible+label{outline:2px solid var(--cyan);outline-offset:2px}
+.rolepick.one{grid-template-columns:1fr}
+.branchlbl{font-size:.78rem;font-family:var(--f-mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.brn{font-size:.78rem;color:var(--mid)}
+.linkbtn{background:none;border:0;color:var(--cyan);font:inherit;font-size:.85rem;cursor:pointer;padding:0;text-decoration:underline}
+
+.hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px}
+@media (max-width:760px){.hero{grid-template-columns:1fr}}
+.next{border-color:var(--cyan-d);background:linear-gradient(135deg,rgba(63,220,242,.10),transparent 60%),var(--panel)}
+.next .count{font-family:var(--f-mono);font-size:2.1rem;font-weight:600;color:var(--cyan);font-variant-numeric:tabular-nums;line-height:1.1}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px}
+.stat .n{font-family:var(--f-mono);font-size:1.7rem;font-weight:600;font-variant-numeric:tabular-nums}
+.stat .l{font-size:.8rem;color:var(--muted)}
+.prog{display:grid;gap:10px}
+.prog .pr{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,60px);gap:10px;align-items:center}
+.bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%}
+
+.lesson{display:grid;gap:10px}
+.lesson .meta{display:flex;gap:14px;flex-wrap:wrap;font-size:.86rem;color:var(--muted)}
+.lesson.is-live{border-color:var(--bad)}
+.code-big{font-family:var(--f-mono);font-size:1.5rem;font-weight:600;letter-spacing:.12em;color:var(--cyan);user-select:all}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:400}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+.topic{display:grid;gap:12px;align-content:start}
+.topic .code{font-family:var(--f-mono);font-size:.75rem;color:var(--cyan)}
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.lvbtn{display:grid;gap:3px;text-align:left;padding:10px;border-radius:4px;background:var(--bg);border:1px solid var(--line2);color:var(--fg);cursor:pointer;font:inherit}
+.lvbtn:hover{border-color:currentColor}
+.lvbtn .t{font-family:var(--f-disp);font-weight:600}
+.lvbtn .s{font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
+
+.qed{border:1px solid var(--line);border-radius:6px;padding:14px;display:grid;gap:10px;background:var(--bg)}
+.qed .opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:640px){.qed .opts{grid-template-columns:1fr}}
+.opt{display:flex;gap:8px;align-items:center}
+.opt input[type=radio]{width:auto;accent-color:var(--easy)}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+
+.play{position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto;
+  padding:calc(20px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background-image:radial-gradient(ellipse at top,rgba(63,220,242,.12),transparent 60%)}
+.stage{max-width:720px;margin:0 auto;display:grid;gap:18px}
+.phead{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.timer{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden}
+.timer i{display:block;height:100%;background:var(--cyan);transition:width .1s linear}
+.question{font-family:var(--f-disp);font-size:clamp(1.3rem,4vw,1.9rem);font-weight:600;line-height:1.25}
+.answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.answers{grid-template-columns:1fr}}
+.ans{display:flex;gap:12px;align-items:center;text-align:left;font:inherit;font-size:1rem;color:var(--fg);background:var(--panel);border:1px solid var(--line2);border-radius:6px;padding:14px;cursor:pointer;min-height:64px}
+.ans:hover:not(:disabled){border-color:var(--cyan);background:var(--panel2)}
+.ans .k{font-family:var(--f-mono);font-weight:600;color:var(--cyan);border:1px solid var(--cyan-d);border-radius:3px;padding:2px 7px;flex:none}
+.ans.ok{border-color:var(--easy);background:rgba(74,222,128,.12)}
+.ans.no{border-color:var(--bad);background:rgba(251,113,133,.12)}
+.ans:disabled{cursor:default}
+.result{text-align:center;display:grid;gap:10px;justify-items:center}
+.result .big{font-family:var(--f-mono);font-size:4rem;font-weight:600;color:var(--cyan);line-height:1}
+.review{display:grid;gap:8px;text-align:left;width:100%}
+.review div{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:.9rem}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--panel2);border:1px solid var(--cyan);color:var(--fg);padding:10px 16px;border-radius:6px;font-size:.9rem;max-width:calc(100% - 32px)}
+textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line2);border-radius:4px;padding:8px 10px;width:100%;min-width:0;resize:vertical;min-height:70px}
+textarea:focus{border-color:var(--cyan);outline:none}
+/* seviye ve pekiştirme */
+.lvcard{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 18px;align-items:center}
+.lvnum{grid-row:span 2;width:72px;height:72px;border:2px solid var(--cyan);border-radius:8px;display:grid;place-items:center;align-content:center;font-family:var(--f-mono);color:var(--cyan);line-height:1}
+.lvnum b{font-size:1.9rem;font-weight:600}
+.lvnum span{font-size:.62rem;letter-spacing:.12em;margin-top:3px}
+.xpbar{height:8px;background:var(--bg);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--easy))}
+.pklabel{display:flex;justify-content:space-between;gap:8px;font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+.lvbtn:disabled{opacity:.45;cursor:not-allowed}
+.lvbtn:disabled:hover{border-color:var(--line2)}
+.why{border:1px solid var(--line2);border-radius:6px;padding:12px 14px;background:var(--panel);display:grid;gap:6px;font-size:.95rem}
+.why .lab{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase}
+/* ödevler */
+.hwl{display:grid;gap:14px}
+.hw{display:grid;gap:10px}
+.hw .desc{color:var(--fg);max-width:70ch;white-space:pre-wrap}
+.hw details summary{cursor:pointer;font-family:var(--f-mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--cyan)}
+.hw details[open] summary{margin-bottom:8px}
+.kind{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;padding:2px 7px;border-radius:3px;border:1px solid var(--line2);color:var(--muted)}
+.pill.ok{color:var(--easy)} .pill.late{color:var(--mid)} .pill.miss{color:var(--bad)}
+.hwbar{height:6px;background:var(--bg);border:1px solid var(--line);border-radius:3px;overflow:hidden;max-width:260px}
+.hwbar i{display:block;height:100%;background:var(--easy)}
+/* galeri */
+.gfilter{display:flex;gap:6px;flex-wrap:wrap}
+.gfilter button{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:99px;border:1px solid var(--line2);background:none;color:var(--muted);cursor:pointer}
+.gfilter button[aria-pressed="true"]{color:var(--cyan);border-color:var(--cyan)}
+.gcard{display:grid;gap:10px;align-content:start}
+.type{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;padding:2px 7px;border-radius:3px;font-weight:600}
+.type.d3{background:var(--hard);color:#1a0612} .type.qz{background:var(--cyan);color:#04121a}
+.pubpill{color:var(--easy)}
+.like{font-family:var(--f-mono);font-size:.8rem;background:none;border:1px solid var(--line2);color:var(--muted);padding:4px 10px;border-radius:99px;cursor:pointer}
+.like[aria-pressed="true"]{color:var(--hard);border-color:var(--hard)}
+.like:disabled{cursor:default}
+.check{display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:.9rem;color:var(--fg)}
+.check input{width:auto;accent-color:var(--cyan)}
+
+/* 3D editör */
+.pal{display:flex;flex-wrap:wrap;gap:6px}
+.pal button{display:flex;gap:7px;align-items:center;font:inherit;font-size:.82rem;padding:6px 10px;border-radius:4px;border:1px solid var(--line2);background:var(--bg);color:var(--fg);cursor:pointer}
+.pal button[aria-pressed="true"]{border-color:var(--cyan);background:rgba(63,220,242,.1)}
+.sw{width:18px;height:18px;border-radius:3px;display:inline-grid;place-items:center;font-size:.72rem;font-family:var(--f-mono);flex:none}
+.edwrap{display:grid;grid-template-columns:minmax(0,432px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:760px){.edwrap{grid-template-columns:1fr}}
+.g3{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;width:100%;max-width:432px;aspect-ratio:1;touch-action:none;user-select:none;-webkit-user-select:none;background:var(--line);padding:2px;border-radius:4px}
+.g3 div{display:grid;place-items:center;font-size:.78rem;font-family:var(--f-mono);border-radius:2px;cursor:crosshair;min-width:0}
+.t-dot{background:var(--bg)}
+.t-wall{background:var(--line2);box-shadow:inset 0 0 0 1px var(--cyan-d)}
+.t-chip{background:var(--bg);color:var(--mid)}
+.t-gate{background:rgba(63,220,242,.2);color:var(--cyan)}
+.t-trap{background:rgba(251,113,133,.22);color:var(--bad)}
+.t-start{background:var(--easy);color:#04121a}
+.t-fin{background:var(--hard);color:#1a0612}
+.howto{display:grid;gap:8px;font-size:.86rem;color:var(--muted)}
+.howto b{color:var(--fg);font-weight:600}
+
+/* 3D oynatıcı */
+.p3{position:fixed;inset:0;z-index:55;background:#050b14;display:flex;flex-direction:column}
+.hud{display:flex;gap:8px 18px;align-items:center;flex-wrap:wrap;padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line);background:rgba(7,16,28,.92);font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums}
+.hud .ttl{font-family:var(--f-disp);font-weight:600;font-size:1rem;margin-right:auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hud b{color:var(--cyan);font-weight:600}
+.hud .hearts{color:var(--bad);letter-spacing:.1em}
+#scene3d{flex:1;min-height:0;position:relative;overflow:hidden}
+#scene3d canvas{display:block;width:100%;height:100%}
+.dpad{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(3,54px);gap:4px;z-index:2}
+.dpad button{background:rgba(13,26,43,.85);border:1px solid var(--line2);color:var(--cyan);border-radius:10px;font-size:1.25rem;touch-action:none;cursor:pointer}
+.dpad button:active{background:var(--cyan-d)}
+.dpad .du{grid-area:1/2}.dpad .dl{grid-area:2/1}.dpad .dr{grid-area:2/3}.dpad .dd{grid-area:3/2}
+@media (hover:hover) and (pointer:fine){.dpad{opacity:.55}}
+.msg3{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line2);padding:6px 12px;border-radius:4px;font-size:.88rem;pointer-events:none;z-index:2;white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
+.over3{position:absolute;inset:0;display:grid;place-items:center;background:rgba(5,11,20,.72);padding:16px;z-index:3;overflow:auto}
+.over3 .box{max-width:600px;width:100%;background:var(--panel);border:1px solid var(--cyan-d);border-radius:8px;padding:20px;display:grid;gap:14px}
+footer{color:var(--muted);font-size:.8rem;padding-block:0 32px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<!-- GİRİŞ / KAYIT -->
+<div class="auth gut" id="auth">
+  <div class="authbox">
+    <div class="logo"><span class="chip">&lt;/&gt;</span><span>BIG<b>TEKNO</b></span></div>
+    <p class="tagline">Bilişim teknolojileri için canlı ders, test ve oyun platformu</p>
+    <div class="card" id="authCard"><p class="muted">Bağlanıyor…</p></div>
+    <button class="btn ghost" id="guestBtn" type="button" hidden>Yayınlanan oyunlara misafir olarak göz at</button>
+  </div>
+</div>
+
+<div id="guest" hidden>
+  <header class="top"><div class="inner gut">
+    <div class="logo"><span class="chip">&lt;/&gt;</span><span>BIG<b>TEKNO</b></span></div>
+    <span class="small muted" style="margin-right:auto">Misafir</span>
+    <button class="btn pri sm" id="guestBack" type="button">Giriş yap / Kayıt ol</button>
+  </div></header>
+  <main class="gut"><div class="inner"><section class="view">
+    <div class="head"><div><div class="eyebrow">// oyun galerisi</div><h2>Yayınlanan Oyunlar</h2>
+    <p class="sub">Öğretmen ve öğrencilerin yayınladığı 3D ve yarışma oyunları. Skorunun kaydedilmesi ve beğeni için giriş yap.</p></div>
+    <div class="gfilter" data-gf="guest"><button aria-pressed="true" data-f="all">Tümü</button><button aria-pressed="false" data-f="3d">3D</button><button aria-pressed="false" data-f="quiz">Yarışma</button></div></div>
+    <div class="grid" id="guestGallery"></div>
+  </section></div></main>
+</div>
+
+<div id="app" hidden>
+<header class="top">
+  <div class="inner gut">
+    <div class="logo"><span class="chip">&lt;/&gt;</span><span>BIG<b>TEKNO</b></span></div>
+    <nav id="nav" aria-label="Bölümler">
+      <button data-v="panel">Panel</button>
+      <button data-v="canli">Canlı Ders</button>
+      <button data-v="konular">Konular &amp; Testler</button>
+      <button data-v="siniflar">Sınıflar</button>
+      <button data-v="odevler">Ödevler</button>
+      <button data-v="oyun">Oyun Yap</button>
+      <button data-v="galeri">Galeri</button>
+    </nav>
+    <div class="who" id="who"></div>
+  </div>
+</header>
+
+<main class="gut"><div class="inner">
+
+<section class="view" id="v-panel">
+  <div class="head"><div><div class="eyebrow">// kontrol paneli</div><h2 id="hello">Hoş geldin</h2>
+  <p class="sub" id="helloSub"></p></div></div>
+  <div id="pendingNote"></div>
+  <div class="hero">
+    <div class="card next" id="nextLesson"></div>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div class="card lvcard" id="levelCard"></div>
+  <div class="card" id="approvals" hidden></div>
+  <div class="card"><div class="head" style="margin-bottom:12px"><h3>Test ilerlemem</h3><span class="small muted mono">en iyi skor / 5</span></div><div class="prog" id="prog"></div></div>
+</section>
+
+<section class="view" id="v-canli" hidden>
+  <div class="head"><div><div class="eyebrow">// google meet</div><h2>Canlı Dersler</h2>
+  <p class="sub" id="liveSub"></p></div></div>
+  <form class="card" id="meetRoom" novalidate hidden>
+    <div class="head" style="margin-bottom:10px"><h3>Meet odam</h3><span class="small muted">Her öğretmenin kendine ait, farklı bir Meet kodu olur</span></div>
+    <div id="meetNow" style="margin-bottom:12px"></div>
+    <div class="row" style="align-items:flex-end">
+      <div class="f" style="flex:1;min-width:220px"><label for="mRoom">Kişisel Meet bağlantın</label><input id="mRoom" placeholder="https://meet.google.com/abc-defg-hij" autocomplete="off"></div>
+      <button class="btn pri" type="submit">Odayı kaydet</button>
+    </div>
+    <p class="hint" style="margin-top:8px">Odan yoksa <a href="https://meet.google.com/new" target="_blank" rel="noopener">yeni bir Meet toplantısı oluştur</a>, adres çubuğundaki bağlantıyı buraya yapıştır. Bu oda bütün derslerinde otomatik kullanılır.</p>
+    <p class="err" id="mErr" hidden style="margin-top:6px"></p>
+  </form>
+  <form class="card" id="lessonForm" novalidate hidden>
+    <h3 style="margin-bottom:12px">Yeni canlı ders planla</h3>
+    <div class="fields">
+      <div class="f wide"><label for="lTitle">Ders başlığı</label><input id="lTitle" placeholder="Örn. Ağ Temelleri — IP adresleri"></div>
+      <div class="f"><label for="lClass">Sınıf</label><select id="lClass"></select></div>
+      <div class="f"><label for="lTopic">Konu</label><select id="lTopic"></select></div>
+      <div class="f"><label for="lDate">Tarih</label><input id="lDate" type="date"></div>
+      <div class="f"><label for="lTime">Saat</label><input id="lTime" type="time" value="19:00"></div>
+      <div class="f"><label for="lDur">Süre (dakika)</label><input id="lDur" type="number" min="10" max="240" value="40"></div>
+      <div class="f"><label for="lMeet">Meet bağlantısı</label><input id="lMeet" placeholder="https://meet.google.com/abc-defg-hij"></div>
+      <div class="f wide"><p class="hint">Meet odan kayıtlıysa bağlantı otomatik dolar. Bu ders için farklı bir oda kullanmak istersen değiştirebilirsin.</p></div>
+    </div>
+    <p class="err" id="lErr" hidden></p>
+    <div class="row" style="margin-top:14px"><button class="btn pri" type="submit">Dersi kaydet</button></div>
+  </form>
+  <div class="grid" id="lessonList"></div>
+</section>
+
+<section class="view" id="v-konular" hidden>
+  <div class="head"><div><div class="eyebrow">// bilişim teknolojileri</div><h2>Konular &amp; Testler</h2>
+  <p class="sub">Her konuda üç seviye var. Her seviye 5 sorudan oluşur: önce Kolay, sonra Orta, en son Zor.</p></div>
+  <div class="row small mono"><span class="lv-kolay">● Kolay</span><span class="lv-orta">● Orta</span><span class="lv-zor">● Zor</span></div></div>
+  <div class="grid" id="topicList"></div>
+</section>
+
+<section class="view" id="v-siniflar" hidden>
+  <div class="head"><div><div class="eyebrow">// google classroom</div><h2>Sınıflar</h2>
+  <p class="sub" id="classSub"></p></div>
+  <a class="btn" href="https://classroom.google.com/" target="_blank" rel="noopener">Classroom'u aç ↗</a></div>
+  <div id="classPending"></div>
+  <form class="card" id="classForm" novalidate hidden>
+    <h3 style="margin-bottom:12px">Sınıf oluştur</h3>
+    <div class="fields">
+      <div class="f"><label for="cName">Sınıf adı</label><input id="cName" placeholder="Örn. 6-C Bilişim Teknolojileri"></div>
+      <div class="f"><label for="cUrl">Classroom bağlantısı (isteğe bağlı)</label><input id="cUrl" placeholder="https://classroom.google.com/c/…"></div>
+      <div class="f wide"><p class="hint">Sınıf kodu otomatik oluşturulur. Öğrencilerin bu kodla sınıfına katılır.</p></div>
+    </div>
+    <p class="err" id="cErr" hidden></p>
+    <div class="row" style="margin-top:14px"><button class="btn pri" type="submit">Sınıfı oluştur</button></div>
+  </form>
+  <form class="card" id="joinForm" novalidate hidden>
+    <h3 style="margin-bottom:12px">Sınıfa katıl</h3>
+    <div class="row" style="align-items:flex-end">
+      <div class="f" style="flex:1;min-width:180px"><label for="jCode">Sınıf kodu</label><input id="jCode" placeholder="Öğretmeninin verdiği kod" autocomplete="off" style="font-family:var(--f-mono);letter-spacing:.1em"></div>
+      <button class="btn pri" type="submit">Katıl</button>
+    </div>
+    <p class="err" id="jErr" hidden style="margin-top:8px"></p>
+  </form>
+  <div class="grid" id="classList"></div>
+</section>
+
+<section class="view" id="v-odevler" hidden>
+  <div class="head"><div><div class="eyebrow">// ödevler</div><h2>Ödevler</h2>
+  <p class="sub" id="hwSub"></p></div></div>
+  <div id="hwPending"></div>
+  <form class="card" id="hwForm" novalidate hidden>
+    <h3 style="margin-bottom:12px">Sınıfa ödev ver</h3>
+    <div class="fields">
+      <div class="f"><label for="hwClass">Sınıf</label><select id="hwClass"></select></div>
+      <div class="f"><label for="hwKind">Ödev türü</label><select id="hwKind"><option value="test">Konu testi (5 soru)</option><option value="game">Oyun</option><option value="task">Serbest görev (yazılı teslim)</option></select></div>
+      <div class="f" data-for="test"><label for="hwTopic">Konu</label><select id="hwTopic"></select></div>
+      <div class="f" data-for="test"><label for="hwLevel">Seviye</label><select id="hwLevel"><option value="kolay">Kolay</option><option value="orta">Orta</option><option value="zor">Zor</option></select></div>
+      <div class="f wide" data-for="game" hidden><label for="hwGame">Oyun</label><select id="hwGame"></select></div>
+      <div class="f wide"><label for="hwTitle">Başlık</label><input id="hwTitle" placeholder="Boş bırakırsan otomatik oluşturulur"></div>
+      <div class="f wide"><label for="hwDesc">Açıklama</label><textarea id="hwDesc" placeholder="Örn. Testi çöz, yanlış yaptığın soruların doğrusunu defterine yaz."></textarea></div>
+      <div class="f"><label for="hwDue">Son teslim tarihi</label><input id="hwDue" type="date"></div>
+      <div class="f"><label for="hwDueTime">Son teslim saati</label><input id="hwDueTime" type="time" value="23:59"></div>
+    </div>
+    <p class="err" id="hwErr" hidden></p>
+    <div class="row" style="margin-top:14px"><button class="btn pri" type="submit">Ödevi ver</button></div>
+  </form>
+  <div class="hwl" id="hwList"></div>
+</section>
+
+<section class="view" id="v-oyun" hidden>
+  <div class="head"><div><div class="eyebrow">// oyun stüdyosu</div><h2>Kendi Oyununu Yap</h2>
+  <p class="sub">Bilgi yarışması ya da 3D parkur oyunu tasarla. "Galeride yayınla" dersen oyunun herkesin görebileceği Galeri'ye çıkar.</p></div></div>
+  <div class="card"><div class="head" style="margin-bottom:10px"><h3>Oyunlarım</h3></div><div class="grid" id="gameList"></div></div>
+  <div class="card" id="teacherGamesCard" hidden><div class="head" style="margin-bottom:10px"><h3>Öğretmenlerimin oyunları</h3></div><div class="grid" id="teacherGames"></div></div>
+  <div class="seg" id="modeSeg" role="group" aria-label="Oyun türü" style="max-width:420px"><button type="button" data-mode="3d" aria-pressed="true">3D oyun</button><button type="button" data-mode="quiz" aria-pressed="false">Yarışma oyunu</button></div>
+
+  <div class="card" id="ed3d" style="display:grid;gap:16px">
+    <div class="head"><h3 id="e3Title">Yeni 3D oyun</h3><div class="row"><button class="btn ghost sm" id="e3Template" type="button">Örnek haritayı yükle</button><button class="btn ghost sm" id="e3Clear" type="button">Haritayı boşalt</button></div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px">
+      <div class="f"><label for="e3Name">Oyun adı</label><input id="e3Name" placeholder="Örn. Siber Labirent"></div>
+      <div class="f"><label for="e3Theme">Tema</label><select id="e3Theme"><option value="neon">Neon şehir</option><option value="devre">Devre kartı</option><option value="uzay">Uzay istasyonu</option></select></div>
+      <div class="f"><label for="e3Limit">Süre sınırı</label><select id="e3Limit"><option value="60">60 saniye</option><option value="90">90 saniye</option><option value="120">120 saniye</option><option value="180">180 saniye</option><option value="0">Süresiz</option></select></div>
+      <div class="f"><label for="e3Topic">Soru kapısı konusu</label><select id="e3Topic"></select></div>
+      <div class="f"><label for="e3Level">Soru seviyesi</label><select id="e3Level"><option value="kolay">Kolay</option><option value="orta">Orta</option><option value="zor">Zor</option></select></div>
+    </div>
+    <div class="pal" id="pal" role="group" aria-label="Çizim aracı"></div>
+    <div class="edwrap">
+      <div class="g3" id="g3" aria-label="12×12 oyun haritası"></div>
+      <div class="howto">
+        <p><b>Nasıl yapılır?</b> Bir araç seç, haritada tıkla ya da sürükleyerek boya.</p>
+        <p><b>Çip</b> toplanınca 100 puan. <b>Soru kapısı</b> ancak sorunun doğru cevabıyla açılır, 50 puan. <b>Lazer tuzak</b> bir can götürür ve oyuncuyu başa döndürür.</p>
+        <p>Bir <b>Başlangıç</b> ve bir <b>Bitiş</b> olmalı, aralarında yol bulunmalı. Bitişe ulaşınca kalan süre ve canlar bonus puan getirir.</p>
+        <p>Oyun ok tuşları veya WASD ile, telefonda ekrandaki yön tuşlarıyla oynanır.</p>
+        <p class="mono small" id="e3Stats"></p>
+      </div>
+    </div>
+    <label class="check"><input type="checkbox" id="e3Pub"> Galeride yayınla (herkes görebilir ve oynayabilir)</label>
+    <p class="err" id="e3Err" hidden></p>
+    <div class="row"><button class="btn" id="e3Test" type="button">▶ Test et</button><button class="btn pri" id="e3Save" type="button">Oyunu kaydet</button><button class="btn ghost sm" id="e3New" type="button" hidden>Yeni oyuna başla</button></div>
+  </div>
+
+  <div class="card" id="quizEd" hidden style="display:grid;gap:14px">
+    <div class="head"><h3 id="edTitle">Yeni oyun</h3><button class="btn ghost sm" id="edReset" type="button">Temizle</button></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+      <div class="f"><label for="gTitle">Oyun adı</label><input id="gTitle" placeholder="Örn. Donanım Yarışması"></div>
+      <div class="f"><label for="gTime">Soru başına süre</label><select id="gTime"><option value="10">10 saniye</option><option value="15" selected>15 saniye</option><option value="20">20 saniye</option><option value="30">30 saniye</option><option value="0">Süresiz</option></select></div>
+    </div>
+    <div class="row">
+      <span class="small muted">Hazır sorulardan ekle:</span>
+      <select id="impTopic" style="width:auto"></select>
+      <select id="impLevel" style="width:auto"><option value="kolay">Kolay</option><option value="orta">Orta</option><option value="zor">Zor</option></select>
+      <button class="btn sm" id="impBtn" type="button">5 soru ekle</button>
+    </div>
+    <div id="qEditor" style="display:grid;gap:12px"></div>
+    <label class="check"><input type="checkbox" id="gPub"> Galeride yayınla (herkes görebilir ve oynayabilir)</label>
+    <p class="err" id="gErr" hidden></p>
+    <div class="row"><button class="btn" id="addQ" type="button">+ Soru ekle</button><button class="btn pri" id="saveGame" type="button">Oyunu kaydet</button></div>
+  </div>
+</section>
+
+<section class="view" id="v-galeri" hidden>
+  <div class="head"><div><div class="eyebrow">// oyun galerisi</div><h2>Galeri</h2>
+  <p class="sub">Herkesin yayınladığı 3D ve yarışma oyunları. Oyna, beğen, rekoru kır.</p></div>
+  <div class="gfilter" data-gf="app"><button aria-pressed="true" data-f="all">Tümü</button><button aria-pressed="false" data-f="3d">3D</button><button aria-pressed="false" data-f="quiz">Yarışma</button></div></div>
+  <div class="grid" id="gallery"></div>
+</section>
+
+</div></main>
+<footer class="gut"><div class="inner">BigTekno · Sınıflar, dersler, skorlar ve oyunlar bu sayfanın ortak veritabanında saklanır.</div></footer>
+</div>
+
+<div class="play" id="play" hidden><div class="stage" id="stage"></div></div>
+<div class="p3" id="play3d" hidden>
+  <div class="hud" id="hud"></div>
+  <div id="scene3d">
+    <div class="dpad" id="dpad"><button class="du" data-d="0,-1" aria-label="Yukarı">▲</button><button class="dl" data-d="-1,0" aria-label="Sol">◀</button><button class="dr" data-d="1,0" aria-label="Sağ">▶</button><button class="dd" data-d="0,1" aria-label="Aşağı">▼</button></div>
+    <div class="msg3" id="msg3" hidden></div>
+    <div class="over3" id="over3" hidden><div class="box" id="over3box"></div></div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const p2=n=>String(n).padStart(2,'0');
+const uid8=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const ymd=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const LV={kolay:'Kolay',orta:'Orta',zor:'Zor'};
+const LVC={kolay:'var(--easy)',orta:'var(--mid)',zor:'var(--hard)'};
+
+const T=[
+{id:'donanim',code:'BT-01',name:'Bilgisayar Donanımı',desc:'İşlemci, bellek, depolama, giriş-çıkış birimleri.',L:{
+kolay:[['Bilgisayarın "beyni" olarak bilinen bileşen hangisidir?',['İşlemci (CPU)','RAM','Sabit disk','Monitör']],
+['Hangisi bir giriş birimidir?',['Klavye','Hoparlör','Yazıcı','Monitör']],
+['Hangisi bir çıkış birimidir?',['Yazıcı','Fare','Mikrofon','Tarayıcı']],
+['Elektrik kesildiğinde içindeki veriler silinen bellek hangisidir?',['RAM','SSD','ROM','Flash bellek']],
+['Tüm bileşenlerin üzerine takıldığı ana devre kartı hangisidir?',['Anakart','Ekran kartı','Güç kaynağı','Kasa']]],
+orta:[['1 bayt kaç bitten oluşur?',['8','4','16','1024']],
+['SSD\'nin HDD\'ye göre en önemli üstünlüğü nedir?',['Hareketli parçası olmadığı için daha hızlıdır','Her zaman daha ucuzdur','Daha fazla ses çıkarır','Daha ağırdır']],
+['İşlemci hızı hangi birimle ifade edilir?',['GHz','GB','Mbps','dpi']],
+['1 KB yaklaşık kaç bayttır?',['1024','100','1.000.000','8']],
+['Görüntü işlemekten sorumlu birim hangisidir?',['GPU','PSU','NIC','BIOS']]],
+zor:[['Bilgisayar açılırken donanımı test eden ilk işlemin adı nedir?',['POST','DNS','HTTP','RAID']],
+['İşlemcideki önbellek (cache) ne işe yarar?',['Sık kullanılan verilere çok hızlı erişim sağlar','Elektrik depolar','Görüntü üretir','İnterneti hızlandırır']],
+['Çok çekirdekli işlemcinin avantajı nedir?',['Birden çok işi aynı anda yürütebilir','Daha az RAM kullanır','Disk kapasitesini artırır','Ekran çözünürlüğünü artırır']],
+['2 TB yaklaşık kaç GB eder?',['2048','200','20.000','2.000.000']],
+['Kalıcı olan ve donanım yazılımını (firmware) saklayan bellek hangisidir?',['ROM','RAM','Cache','Register']]]}},
+{id:'ag',code:'BT-02',name:'İnternet ve Ağlar',desc:'Tarayıcılar, IP, DNS, ağ türleri ve protokoller.',L:{
+kolay:[['Web sayfalarını görüntülemek için kullanılan programa ne denir?',['Web tarayıcısı','Kelime işlemci','Antivirüs','Hesap tablosu']],
+['Kablosuz yerel ağ teknolojisinin adı nedir?',['Wi-Fi','USB','HDMI','VGA']],
+['E-posta adresinde mutlaka bulunan işaret hangisidir?',['@','#','&','%']],
+['URL nedir?',['Bir web sayfasının adresi','Bir virüs türü','Bir donanım parçası','Bir resim biçimi']],
+['Evdeki cihazları birbirine bağlayıp interneti dağıtan cihaz hangisidir?',['Router (yönlendirici)','Tarayıcı','Projeksiyon','Klavye']]],
+orta:[['HTTPS\'teki "S" harfi neyi ifade eder?',['Secure (güvenli)','Speed (hız)','Server (sunucu)','System (sistem)']],
+['Alan adlarını (ör. meb.gov.tr) IP adresine çeviren sistem hangisidir?',['DNS','FTP','LAN','CPU']],
+['İnternet bağlantı hızı hangi birimle ölçülür?',['Mbps','GHz','dpi','mAh']],
+['Bir okul binası içindeki ağ hangi türdendir?',['LAN','WAN','MAN','GPS']],
+['Hangisi bir bulut depolama hizmetidir?',['Google Drive','Flash bellek','DVD','Harici HDD']]],
+zor:[['IPv4 adresi kaç bitten oluşur?',['32','64','128','16']],
+['Web sayfalarının iskeletini oluşturan işaretleme dili hangisidir?',['HTML','SQL','Python','C']],
+['Bir sunucuya ulaşılıp ulaşılamadığını ve gecikmeyi test eden komut hangisidir?',['ping','copy','format','dir']],
+['TCP ile UDP arasındaki temel fark nedir?',['TCP verinin eksiksiz ulaştığını garanti eder, UDP etmez','UDP daha güvenlidir','TCP yalnızca video için kullanılır','İkisi arasında fark yoktur']],
+['192.168.1.10 ne tür bir adrestir?',['Özel (yerel ağ) IP adresi','Genel IP adresi','MAC adresi','Alan adı']]]}},
+{id:'guvenlik',code:'BT-03',name:'Siber Güvenlik',desc:'Parolalar, oltalama, zararlı yazılım, dijital vatandaşlık.',L:{
+kolay:[['Aşağıdakilerden hangisi en güçlü paroladır?',['T7#kP!9vqL2','123456','ahmet2010','parola']],
+['Tanımadığın birinden ekli bir e-posta gelirse ne yapmalısın?',['Eki açmadan silmeli veya öğretmene bildirmeliyim','Hemen açarım','Arkadaşlarıma iletirim','İndirip çalıştırırım']],
+['Bilgisayara zarar vermek için yazılmış programlara ne denir?',['Zararlı yazılım (virüs)','Tarayıcı','Sürücü','Yazı tipi']],
+['Ev adresi gibi kişisel bilgiler nerede paylaşılabilir?',['Sadece güvendiğim kişilerle, gerektiğinde','Herkese açık sosyal medyada','Oyun sohbetlerinde','Yorum kısımlarında']],
+['İnternette zorbalığa uğrarsan ilk ne yapmalısın?',['Güvendiğim bir yetişkine veya öğretmene söylerim','Aynı şekilde karşılık veririm','Kimseye söylemem','Parolamı paylaşırım']]],
+orta:[['Oltalama (phishing) nedir?',['Sahte mesaj ve sitelerle bilgi çalma girişimi','Bir balık tutma oyunu','Bir donanım arızası','Dosya sıkıştırma yöntemi']],
+['İki adımlı doğrulama nedir?',['Paroladan sonra ikinci bir kodla kimliğin doğrulanması','İki farklı parola yazmak','İki bilgisayardan giriş yapmak','Parolayı iki kez değiştirmek']],
+['Güvenlik duvarının (firewall) görevi nedir?',['Ağ trafiğini denetleyip yetkisiz erişimi engellemek','Bilgisayarı soğutmak','Dosyaları yedeklemek','Ekranı korumak']],
+['Yazılım güncellemeleri neden önemlidir?',['Güvenlik açıklarını kapatır','Sadece renkleri değiştirir','Bilgisayarı yavaşlatır','Hiçbir önemi yoktur']],
+['Halka açık Wi-Fi\'de hangisini yapmamak gerekir?',['Banka işlemi yapmak','Haber okumak','Hava durumuna bakmak','Harita açmak']]],
+zor:[['Fidye yazılımı (ransomware) ne yapar?',['Dosyaları şifreleyip açmak için para ister','Sadece reklam gösterir','Ekranı büyütür','Diski temizler']],
+['Çok sayıda hesabın parolasını yönetmek için en güvenli yol hangisidir?',['Parola yöneticisi kullanmak','Her yerde aynı parolayı kullanmak','Parolayı kâğıda yazıp ekrana yapıştırmak','Doğum tarihini kullanmak']],
+['Sosyal mühendislik nedir?',['İnsanları kandırarak bilgi veya erişim elde etmek','Bir yazılım geliştirme yöntemi','Bir ağ kablosu türü','Sosyal medya reklamcılığı']],
+['Yedeklemede 3-2-1 kuralı neyi anlatır?',['3 kopya, 2 farklı ortam, 1 kopya başka bir yerde','3 parola, 2 hesap, 1 e-posta','3 gün, 2 hafta, 1 ay','3 disk, 2 bilgisayar, 1 sunucu']],
+['Tarayıcıdaki kilit simgesi (HTTPS) neyi garanti eder?',['Verinin şifrelenerek iletildiğini','Sitenin kesinlikle dürüst olduğunu','Sitede virüs olmadığını','Sitenin devlete ait olduğunu']]]}},
+{id:'algoritma',code:'BT-04',name:'Algoritma ve Kodlama',desc:'Akış şemaları, değişkenler, koşullar, döngüler.',L:{
+kolay:[['Algoritma nedir?',['Bir problemi çözmek için sıralı adımlar','Bir donanım parçası','Bir virüs türü','Bir oyun konsolu']],
+['Akış şemasında "Başla / Bitir" hangi şekille gösterilir?',['Elips (yuvarlatılmış)','Baklava dilimi','Paralelkenar','Altıgen']],
+['Hangisi blok tabanlı bir kodlama aracıdır?',['Scratch','Excel','Paint','Not Defteri']],
+['Bir komutu tekrar tekrar çalıştıran yapıya ne denir?',['Döngü','Değişken','Yorum satırı','Başlık']],
+['Programdaki hataları bulup düzeltmeye ne denir?',['Hata ayıklama (debug)','İndirme (download)','Yükleme (upload)','Oturum açma (login)']]],
+orta:[['Akış şemasında karar (koşul) hangi şekille gösterilir?',['Baklava dilimi (eşkenar dörtgen)','Elips','Dikdörtgen','Daire']],
+['Değişken nedir?',['Bir değeri saklayan isimlendirilmiş alan','Değişmeyen ekran','Bir hata türü','Bir döngü']],
+['"Eğer ... ise" yapısına ne ad verilir?',['Koşul (karar) yapısı','Döngü','Dizi','Yorum']],
+['x = 5 ve ardından x = x + 3 çalışırsa x kaç olur?',['8','5','3','53']],
+['Python\'da ekrana yazı yazdıran komut hangisidir?',['print()','echo','write','show()']]],
+zor:[['Python\'da "for i in range(3):" döngüsü kaç kez çalışır?',['3','2','4','0']],
+['Python\'da 10 % 3 işleminin sonucu nedir?',['1','3','0','3.33']],
+['Sıralı bir listede ortadan başlayıp aralığı yarıya bölerek arayan yöntem hangisidir?',['İkili arama','Doğrusal arama','Rastgele arama','Kabarcık sıralama']],
+['Mantıksal ifade "True and False" sonucu nedir?',['False','True','Hata verir','None']],
+['Fonksiyon kullanmanın en önemli faydası nedir?',['Kodu tekrar kullanılabilir ve düzenli yapar','Programı her zaman hızlandırır','Değişkenleri siler','Hata yapmayı imkânsız kılar']]]}}
+];
+
+/* Pekiştirme bankası: [soru, [doğru, yanlış, yanlış, yanlış], açıklama] */
+const PK={
+donanim:{
+kolay:[
+['Fare hangi tür birimdir?',['Giriş birimi','Çıkış birimi','Depolama birimi','İşlem birimi'],'Fare, hareket ve tıklamaları bilgisayara gönderir. Bilgisayara veri gönderen birimler giriş birimidir.'],
+['Verileri bilgisayar kapansa da kalıcı olarak saklayan birim hangisidir?',['Sabit disk (HDD/SSD)','RAM','İşlemci','Ekran kartı'],'RAM geçici bellektir. HDD ve SSD ise elektrik kesilse de veriyi korur.'],
+['Hoparlör hangi tür birimdir?',['Çıkış birimi','Giriş birimi','Depolama birimi','İşlem birimi'],'Hoparlör bilgisayarın ürettiği sesi bize iletir. Bilgisayardan bize bilgi veren birimler çıkış birimidir.'],
+['Bilgisayarın parçalarına elektrik dağıtan birim hangisidir?',['Güç kaynağı (PSU)','Anakart','RAM','Fan'],'Güç kaynağı prizden gelen elektriği parçaların kullanabileceği gerilime dönüştürür.'],
+['Dokunmatik ekran hangi tür birimdir?',['Hem giriş hem çıkış birimi','Yalnızca giriş birimi','Yalnızca çıkış birimi','Depolama birimi'],'Görüntü verdiği için çıkış, dokunmayı algıladığı için giriş birimidir.'],
+['İşlemcinin aşırı ısınmasını önleyen parça hangisidir?',['Soğutucu ve fan','Güç kaynağı','Sabit disk','Ses kartı'],'İşlemci çalışırken ısınır. Soğutucu ısıyı dağıtır, fan da sıcak havayı uzaklaştırır.']],
+orta:[
+['En küçük veri birimi hangisidir?',['Bit','Bayt','Kilobayt','Megabayt'],'Bit yalnızca 0 ya da 1 değerini alır. 8 bit bir bayt eder.'],
+['1 GB yaklaşık kaç MB eder?',['1024','100','512','10'],'Bilgisayarda birimler 1024 katıyla büyür: 1024 MB = 1 GB.'],
+['USB ne işe yarar?',['Cihazları bilgisayara bağlamaya yarayan bir bağlantı standardıdır','Bir işlemci markasıdır','Bir işletim sistemidir','Bir virüs türüdür'],'USB (Universal Serial Bus) fare, klavye, flash bellek gibi cihazları bağlamak için kullanılır.'],
+['Bilgisayar açılınca donanımı başlatan, anakart üzerindeki yazılım hangisidir?',['BIOS / UEFI','Kelime işlemci','Web tarayıcısı','Antivirüs'],'BIOS/UEFI donanımı test eder ve işletim sistemini başlatır.'],
+['RAM miktarını artırmak genellikle neyi iyileştirir?',['Aynı anda daha çok programı akıcı çalıştırmayı','İnternet hızını','Ekran parlaklığını','Disk kapasitesini'],'Açık programlar RAM\'de tutulur. RAM artınca daha çok program yavaşlamadan çalışır.'],
+['Ekran çözünürlüğü neyi ifade eder?',['Ekrandaki piksel sayısını','Ekranın ağırlığını','Ekran parlaklığını','Ses düzeyini'],'1920×1080 gibi değerler yatay ve dikey piksel sayısıdır. Piksel arttıkça görüntü daha net olur.']],
+zor:[
+['RGB renk modelinde bir renk kaç ana renkle tanımlanır?',['3','2','4','16'],'RGB; kırmızı (Red), yeşil (Green) ve mavi (Blue) ışıkların karışımıyla rengi oluşturur.'],
+['1 bayt kaç farklı değer gösterebilir?',['256','8','255','1024'],'8 bitin her biri 0 ya da 1 olabilir: 2⁸ = 256 farklı değer (0–255).'],
+['İkilik tabandaki 1010 sayısı onluk tabanda kaçtır?',['10','12','8','1010'],'1010 = 1×8 + 0×4 + 1×2 + 0×1 = 10.'],
+['3 GHz hızındaki işlemci saniyede yaklaşık kaç döngü yapar?',['3 milyar','3 milyon','3 bin','300'],'Giga milyar demektir. 1 GHz saniyede bir milyar döngüdür.'],
+['SSD\'lerde veri hangi teknolojiyle saklanır?',['Flash bellek (NAND)','Dönen manyetik plaka','Optik lazer','Manyetik bant'],'SSD\'de hareketli parça yoktur. Veri flash bellek hücrelerinde elektrik yükü olarak tutulur.'],
+['Hangisi bir depolama birimi değildir?',['GPU','SSD','HDD','Flash bellek'],'GPU grafik işlemcidir, veri saklamaz. Diğerleri depolama birimidir.']]},
+ag:{
+kolay:[
+['İnternette bilgi aramamızı sağlayan sitelere ne denir?',['Arama motoru','İşletim sistemi','Donanım','Antivirüs'],'Arama motorları milyonlarca sayfayı tarar ve aradığımız kelimeye uygun sonuçları listeler.'],
+['Bir web sayfasından diğerine geçmeyi sağlayan tıklanabilir öğeye ne denir?',['Bağlantı (link)','Simge','Klasör','Sürücü'],'Bağlantılar sayfaları birbirine bağlar. Web adı da bu ağ yapısından gelir.'],
+['"www" kısaltması neyi ifade eder?',['World Wide Web','World Wide Wireless','Web Wide World','Wireless Web World'],'World Wide Web, internet üzerinde birbirine bağlı web sayfalarının oluşturduğu sistemdir.'],
+['E-posta gönderirken alıcının adresi hangi alana yazılır?',['Kime','Konu','İmza','Ek'],'"Kime" alanı mesajın kime gideceğini belirler. "Konu" ise mesajın başlığıdır.'],
+['Bluetooth nasıl bir bağlantıdır?',['Kısa mesafeli kablosuz bağlantı','Kablolu ağ bağlantısı','Uydu bağlantısı','Fiber optik bağlantı'],'Bluetooth birkaç metre içindeki kulaklık, hoparlör gibi cihazları kablosuz bağlar.'],
+['İnternet erişimini evimize ulaştıran firmaya ne denir?',['İnternet servis sağlayıcı','Arama motoru','Web tarayıcı','İşletim sistemi'],'İnternet servis sağlayıcılar (İSS) aboneliğe karşılık internet bağlantısı sunar.']],
+orta:[
+['".edu.tr" uzantılı alan adları genellikle kime aittir?',['Eğitim kurumlarına','Ticari şirketlere','Askeri kurumlara','Kişisel bloglara'],'.edu eğitim, .com ticari, .gov devlet kurumlarını belirtir. .tr Türkiye\'yi gösterir.'],
+['Kablolu yerel ağlarda en sık kullanılan kablo hangisidir?',['Ethernet kablosu','HDMI kablosu','Ses kablosu','VGA kablosu'],'Ethernet (RJ-45 uçlu) kablolar bilgisayarları modem, router ve switch\'lere bağlar.'],
+['Router\'ın temel görevi nedir?',['Veri paketlerini ağlar arasında doğru yere yönlendirmek','Dosya yazdırmak','Virüs temizlemek','Görüntü işlemek'],'Router (yönlendirici) gelen paketin hangi cihaza gideceğine karar verir.'],
+['Bir cihazın ağ kartına üretimde verilen fiziksel kimliğe ne denir?',['MAC adresi','URL','E-posta adresi','Alan adı'],'MAC adresi ağ kartına özeldir. IP adresi ise ağa göre değişebilir.'],
+['Wi-Fi sinyalinin zayıflamasına en çok ne yol açar?',['Router\'a uzaklık ve kalın duvarlar','Klavyenin rengi','Ekran parlaklığı','Yazı tipi'],'Kablosuz sinyal mesafe arttıkça ve duvarlardan geçtikçe zayıflar.'],
+['Belgeyi aynı anda birden çok kişinin internetten düzenleyebilmesine ne denir?',['Bulut tabanlı ortak çalışma','Yerel depolama','Çevrimdışı çalışma','Donanım paylaşımı'],'Google Dokümanlar gibi bulut araçlarında dosya sunucudadır, herkes aynı kopya üzerinde çalışır.']],
+zor:[
+['HTTPS bağlantıları varsayılan olarak hangi portu kullanır?',['443','80','21','22'],'HTTP 80, HTTPS 443, FTP 21, SSH 22 numaralı portu kullanır.'],
+['IPv6 adresleri kaç bitten oluşur?',['128','32','64','256'],'IPv4 32 bitti ve adresler tükendi. IPv6 128 bitle çok daha fazla adres sunar.'],
+['Veriyi küçük parçalara bölerek gönderme yöntemine ne denir?',['Paket anahtarlama','Devre kesme','Sıkıştırma','Şifreleme'],'İnternet veriyi paketlere böler. Her paket farklı yoldan gidip hedefte birleşebilir.'],
+['Ping (gecikme) süresi hangi birimle ölçülür?',['Milisaniye (ms)','Megabayt','GHz','Piksel'],'Ping, bir paketin gidip dönme süresidir. Düşük ms daha hızlı tepki demektir.'],
+['Tarayıcıya bir adres yazınca sunucuya ne gönderilir?',['Bir istek (request)','Bir virüs','Bir donanım parçası','Ekran görüntüsü'],'Tarayıcı HTTP isteği gönderir. Sunucu sayfayı yanıt (response) olarak geri yollar.'],
+['Bir ağdaki cihazlara IP adresini otomatik dağıtan servis hangisidir?',['DHCP','DNS','FTP','HTML'],'DHCP, ağa bağlanan cihaza otomatik olarak IP adresi verir. DNS ise isimleri IP\'ye çevirir.']]},
+guvenlik:{
+kolay:[
+['Bilgisayarın başından kalkarken ne yapmalısın?',['Oturumu kilitlemek veya kapatmak','Açık bırakmak','Parolayı ekrana yazmak','Sadece ekranı karartmak'],'Açık bırakılan oturumu başkası kullanabilir. Windows\'ta Windows+L ile hızlıca kilitlenir.'],
+['Antivirüs programı ne işe yarar?',['Zararlı yazılımları tespit edip temizler','İnterneti hızlandırır','Oyun indirir','Ekranı büyütür'],'Antivirüs dosyaları tarar ve bilinen zararlı yazılımları engeller.'],
+['Parolanı kiminle paylaşabilirsin?',['Hiç kimseyle; gerekirse yalnızca velinle','En yakın arkadaşınla','Sınıf arkadaşlarınla','İnternette tanıştığın kişilerle'],'Parola kişiseldir. Yakın arkadaşla bile paylaşmak hesabını riske atar.'],
+['"Ücretsiz telefon kazandınız, tıklayın!" mesajı gelirse ne yaparsın?',['Tıklamadan silerim','Hemen tıklarım','Bilgilerimi gönderirim','Arkadaşlarıma iletirim'],'Bu tür mesajlar genellikle oltalama tuzağıdır. Gerçek çekilişler böyle haber verilmez.'],
+['Dijital ayak izi nedir?',['İnternette bıraktığımız izlerin tamamı','Klavyedeki parmak izi','Farenin bıraktığı iz','Bilgisayarın ağırlığı'],'Paylaşımlar, yorumlar, aramalar dijital ayak izini oluşturur ve uzun süre kalabilir.'],
+['Güçlü bir parolada neler bulunmalı?',['Büyük-küçük harf, rakam ve sembol','Sadece adın','Sadece doğum yılın','1234'],'Uzun ve karışık parolalar tahmin edilmesi ve kırılması zor parolalardır.']],
+orta:[
+['İnternetten bulunan, telif hakkı olan bir resmi izinsiz kullanmak nedir?',['Fikri mülkiyet ihlalidir','Her zaman serbesttir','Sadece okulda yasaktır','Hiçbir sorun yoktur'],'Eserin sahibinin hakları vardır. Lisansı uygun (ör. Creative Commons) görselleri kullanmak gerekir.'],
+['Casus yazılım (spyware) ne yapar?',['Kullanıcıdan habersiz bilgi toplar','Ekranı temizler','Dosyaları yedekler','Bilgisayarı hızlandırır'],'Casus yazılımlar tuş vuruşlarını, parolaları veya gezinme geçmişini gizlice toplayabilir.'],
+['Bir sitenin güvenilirliğini anlamak için ilk neye bakarsın?',['Adresin https ile başlamasına ve alan adının doğru yazılmasına','Sitenin renklerine','Reklam sayısına','Yazı tipine'],'Sahte siteler gerçek adı taklit eder (ör. g00gle). Adres çubuğunu dikkatle oku.'],
+['Bir uygulama izin isterken ne yapmalısın?',['Sadece gerçekten gerekli izinleri vermelisin','Tüm izinleri vermelisin','Okumadan onaylamalısın','Konuma her zaman izin vermelisin'],'Bir fener uygulamasının rehbere erişmesi gerekmez. Gereksiz izin, veri sızıntısı riskidir.'],
+['Solucan (worm) virüsten nasıl ayrılır?',['Kullanıcı bir şey yapmadan ağ üzerinden kendini yayabilir','Sadece donanıma zarar verir','Tamamen zararsızdır','Sadece e-postada bulunur'],'Virüs çoğunlukla bir dosyanın açılmasını bekler. Solucan ağdaki açıkları kullanarak kendiliğinden yayılır.'],
+['Hesabının ele geçirildiğini fark edersen ilk ne yaparsın?',['Parolayı değiştirip iki adımlı doğrulamayı açarım','Hesabı unuturum','Herkese parolamı söylerim','Bilgisayarı satarım'],'Önce erişimi geri al: parolayı değiştir, oturumları kapat, iki adımlı doğrulamayı aç.']],
+zor:[
+['Açık anahtarlı şifrelemede açık anahtar ne için kullanılır?',['Veriyi şifrelemek için; çözmek için özel anahtar gerekir','Veriyi silmek için','Parolayı göstermek için','Virüs taramak için'],'Açık anahtar herkesle paylaşılır ve şifreler. Yalnızca özel anahtarın sahibi şifreyi çözebilir.'],
+['Kaba kuvvet (brute force) saldırısı nedir?',['Olası tüm parolaları tek tek deneme','Sahte e-posta gönderme','Bilgisayarı fiziksel olarak kırma','Wi-Fi\'ı kapatma'],'Kısa parolalar saniyeler içinde denenebilir. Uzun parola bu saldırıyı pratikte imkânsız kılar.'],
+['Hangisi kişisel veri sayılır?',['T.C. kimlik numarası','Hava durumu','Bir şehrin nüfusu','Bir kitabın adı'],'Bir kişiyi tanımlayan her bilgi kişisel veridir: kimlik numarası, adres, telefon, fotoğraf.'],
+['Türkiye\'de kişisel verilerin korunmasını düzenleyen kanunun kısaltması nedir?',['KVKK','TCK','MEB','BTK'],'6698 sayılı Kişisel Verilerin Korunması Kanunu, KVKK olarak bilinir.'],
+['"Sıfırıncı gün" (zero-day) açığı nedir?',['Üreticinin henüz bilmediği veya yamalamadığı güvenlik açığı','Hiç virüs bulunmayan sistem','Günlük yedekleme','Yeni alınmış bilgisayar'],'Üreticinin düzeltmek için "sıfır günü" vardır, bu yüzden bu açıklar çok tehlikelidir.'],
+['Botnet nedir?',['Saldırganın uzaktan yönettiği ele geçirilmiş cihazlar ağı','Bir sohbet uygulaması','Bir antivirüs programı','Robot yarışması'],'Botnetler binlerce cihazla aynı anda saldırı (ör. DDoS) yapmak için kullanılır.']]},
+algoritma:{
+kolay:[
+['Bir algoritmadaki adımların sırası önemli midir?',['Evet, sıra değişirse sonuç değişebilir','Hayır, hiç önemli değildir','Sadece matematikte önemlidir','Sadece oyunlarda önemlidir'],'Önce çorabı sonra ayakkabıyı giymek gibi: sıra bozulursa sonuç da bozulur.'],
+['Akış şemasında işlem adımı hangi şekille gösterilir?',['Dikdörtgen','Elips','Baklava dilimi','Daire'],'Dikdörtgen işlem, elips başla/bitir, baklava dilimi karar, paralelkenar giriş/çıkıştır.'],
+['Hangisi bir programlama dilidir?',['Python','Windows','Chrome','Excel'],'Python kod yazmak için kullanılan bir dildir. Windows işletim sistemi, Chrome tarayıcı, Excel uygulamadır.'],
+['Scratch\'te hareket eden karaktere ne denir?',['Kukla (sprite)','Dekor','Blok','Sahne'],'Kuklalar kodla hareket ettirilir. Dekor ise sahnenin arka planıdır.'],
+['Bilgisayara ne yapacağını söyleyen komutlar dizisine ne denir?',['Program','Donanım','Monitör','Kablo'],'Program, belirli bir işi yapmak için yazılmış komutlar topluluğudur.'],
+['Günlük hayattan hangisi bir algoritma örneğidir?',['Yemek tarifi','Bir resim','Bir renk','Tek bir sayı'],'Tarif, sıralı ve açık adımlarla sonuca götürür; bu tam olarak algoritmadır.']],
+orta:[
+['Akış şemasında giriş/çıkış işlemi hangi şekille gösterilir?',['Paralelkenar','Dikdörtgen','Elips','Baklava dilimi'],'Kullanıcıdan veri alma veya ekrana yazdırma paralelkenarla gösterilir.'],
+['Python\'da yorum satırı hangi işaretle başlar?',['#','//','--','%'],'# işaretinden sonrası çalıştırılmaz. Kodu açıklamak için kullanılır.'],
+['"4 kez tekrarla: 10 adım git, 90 derece dön" komutu ne çizer?',['Kare','Üçgen','Daire','Düz çizgi'],'4 eşit kenar ve 4 dik açı (4×90 = 360°) kareyi oluşturur.'],
+['Python\'da input() ne yapar?',['Kullanıcıdan veri alır','Ekrana yazar','Programı kapatır','Dosya siler'],'input() klavyeden girilen değeri metin olarak döndürür.'],
+['x = 10 iken "eğer x > 5 ise Büyük, değilse Küçük yaz" çıktısı nedir?',['Büyük','Küçük','10','Hata'],'10 > 5 doğrudur, bu yüzden "eğer" bloğu çalışır.'],
+['Hangisi Python\'da geçerli bir değişken adıdır?',['ogrenci_sayisi','2sayi','ogrenci sayisi','for'],'Değişken adı rakamla başlayamaz, boşluk içeremez ve "for" gibi ayrılmış kelime olamaz.']],
+zor:[
+['İçinde break olmayan "while True:" döngüsü ne olur?',['Sonsuz döngü olur','Bir kez çalışır','Hiç çalışmaz','Hemen hata verir'],'Koşul hep True olduğu için döngüden çıkılmaz. break ile çıkış yapılmalıdır.'],
+['liste = [3, 7, 1] için print(liste[1]) çıktısı nedir?',['7','3','1','Hata'],'Python\'da sıralama 0\'dan başlar: liste[0]=3, liste[1]=7, liste[2]=1.'],
+['len("bilişim") sonucu kaçtır?',['7','8','6','1'],'len() karakter sayısını verir: b-i-l-i-ş-i-m = 7.'],
+['Yan yana elemanları karşılaştırıp yer değiştirerek sıralayan algoritma hangisidir?',['Kabarcık sıralama','İkili arama','Doğrusal arama','Rastgele seçme'],'Kabarcık sıralamada büyük elemanlar her turda sona doğru "kabarcık gibi" yükselir.'],
+['Python\'da 2 ** 3 işleminin sonucu kaçtır?',['8','6','9','5'],'** üs alma işlecidir: 2³ = 2×2×2 = 8.'],
+['Bir fonksiyonun sonuç döndürmesi için hangi anahtar kelime kullanılır?',['return','print','def','break'],'return değeri fonksiyonu çağıran yere geri gönderir. print sadece ekrana yazar.']]}
+};
+
+const toQ=([q,o])=>({q,o:[...o],a:0});
+const topicName=id=>(T.find(t=>t.id===id)||{}).name||'Genel';
+
+/* ---------- durum ---------- */
+let db=null,U=null,ME=null,OWNER=false,logged=false,authMode=null;
+const M={accounts:{},classes:[],lessons:[],members:{},scores:{},games:{},likes:{},assigns:[],subs:{},teachers:[],ready:new Set()};
+const ACC=()=>ME&&M.accounts[ME];
+const TEACHER_APPROVAL=false; /* true yapılırsa öğretmen hesapları yönetici onayı bekler */
+const isTeacherId=id=>{const a=M.accounts[id];return !!a&&a.role==='ogretmen'&&(!TEACHER_APPROVAL||M.teachers.includes(id)||(id===ME&&OWNER))};
+const amTeacher=()=>isTeacherId(ME);
+const pendingTeacher=()=>{const a=ACC();return !!a&&a.role==='ogretmen'&&!amTeacher()};
+const myClassIds=()=>amTeacher()?M.classes.filter(c=>c.teacher===ME).map(c=>c.id):((M.members[ME]||{}).classes||[]).filter(id=>M.classes.some(c=>c.id===id));
+const myLessons=()=>{const ids=myClassIds();return M.lessons.filter(l=>ids.includes(l.cls)).sort((a,b)=>lStart(a)-lStart(b))};
+const myScores=()=>((M.scores[ME]||{}).s)||{};
+const uname=id=>(M.accounts[id]||{}).username||'bilinmiyor';
+
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3000)}
+function failMsg(e){return e&&e.code==='invalid_argument'?'Bu işlem için yetkin yok. Öğretmen işlemleri için hesabının site yöneticisi tarafından onaylanmış olması gerekir.':e&&e.code==='quota_exceeded'?'Veritabanı dolu. Eski kayıtları silip tekrar dene.':'Kaydedilemedi, birazdan tekrar dene.'}
+async function write(fn,okMsg){try{await fn();if(okMsg)toast(okMsg);return true}catch(e){console.warn(e);toast(failMsg(e));return false}}
+function armDelete(btn,fn){if(btn.classList.contains('arm')){fn();return}btn.classList.add('arm');const o=btn.textContent;btn.textContent='Emin misin?';setTimeout(()=>{btn.classList.remove('arm');btn.textContent=o},3000)}
+const sess={get(){try{return localStorage.getItem('bt.session')}catch(e){return null}},set(v){try{v?localStorage.setItem('bt.session',v):localStorage.removeItem('bt.session')}catch(e){}}};
+
+/* ---------- şifre ---------- */
+async function pwHash(pw,salt){
+  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(salt),iterations:120000,hash:'SHA-256'},key,256);
+  return [...new Uint8Array(bits)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+const randSalt=()=>[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
+
+/* ---------- giriş / kayıt ekranı ---------- */
+let authRole='ogrenci',authBranch='';
+const BRANCH={yazilim:'Yazılım Öğretmeni',bt:'Bilişim Teknolojileri ve Teknoloji Öğretmeni'};
+const branchOf=id=>BRANCH[(M.accounts[id]||{}).branch]||'';
+const BRANCH_SHORT={yazilim:'Yazılım Öğretmeni',bt:'BT ve Teknoloji Öğretmeni'};
+function showAuth(mode){
+  authMode=mode;$('#auth').hidden=false;$('#app').hidden=true;$('#guest').hidden=true;
+  $('#guestBtn').hidden=mode==='nodb';
+  const c=$('#authCard');
+  if(mode==='nodb'){c.innerHTML=`<h3>Hesap sistemine bağlanılamadı</h3><p class="muted small" style="margin-top:8px">Sunucuya bağlanılamadı. İnternet bağlantını kontrol edip sayfayı yenile. Site yöneticisiysen index.html içindeki Firebase ayarlarını kontrol et.</p>`;return}
+  if(mode==='reset'){
+    c.innerHTML=`<form id="resetF" novalidate style="display:grid;gap:12px"><h3>Şifreni sıfırla</h3>
+      <p class="small muted">Bu Claude hesabıyla oturum açtığın için kimliğin doğrulandı. <b class="mono" style="color:var(--fg)">@${esc(ACC().username)}</b> için yeni şifre belirle.</p>
+      <div class="f"><label for="rPw">Yeni şifre</label><input id="rPw" type="password" autocomplete="new-password"></div>
+      <div class="f"><label for="rPw2">Yeni şifre (tekrar)</label><input id="rPw2" type="password" autocomplete="new-password"></div>
+      <p class="err" id="aErr" hidden></p>
+      <button class="btn pri" type="submit">Şifreyi kaydet</button>
+      <button class="linkbtn" type="button" id="backLogin">Girişe dön</button></form>`;
+    $('#backLogin').onclick=()=>showAuth('login');
+    $('#resetF').onsubmit=async e=>{e.preventDefault();const pw=$('#rPw').value;
+      if(pw.length<6)return aErr('Şifre en az 6 karakter olmalı.');if(pw!==$('#rPw2').value)return aErr('Şifreler aynı değil.');
+      const salt=randSalt(),hash=await pwHash(pw,salt);
+      if(await write(()=>db.doc(`data/users/${ME}/auth`).set({salt,hash}),'Şifren değiştirildi'))showAuth('login')};
+    return;
+  }
+  const reg=mode==='register';
+  c.innerHTML=`<div style="display:grid;gap:16px">
+    <div class="seg" role="group" aria-label="Giriş veya kayıt"><button type="button" data-m="login" aria-pressed="${!reg}">Giriş yap</button><button type="button" data-m="register" aria-pressed="${reg}">Kayıt ol</button></div>
+    <form id="authF" novalidate style="display:grid;gap:12px">
+      <div class="rolepick" role="radiogroup" aria-label="Hesap türü">
+        <input type="radio" name="role" id="rT" value="ogretmen" ${authRole==='ogretmen'?'checked':''}><label for="rT"><b>Öğretmen</b>${reg?'Sınıf oluşturur, ders açar':'Öğretmen girişi'}</label>
+        <input type="radio" name="role" id="rS" value="ogrenci" ${authRole==='ogrenci'?'checked':''}><label for="rS"><b>Öğrenci</b>${reg?'Kodla sınıfa katılır':'Öğrenci girişi'}</label>
+      </div>
+      ${reg?`<div id="branchBox" style="display:grid;gap:6px" ${authRole==='ogretmen'?'':'hidden'}><span class="branchlbl" id="brL">Branşın</span>
+        <div class="rolepick one" role="radiogroup" aria-labelledby="brL">
+          <input type="radio" name="branch" id="bY" value="yazilim" ${authBranch==='yazilim'?'checked':''}><label for="bY"><b>${BRANCH.yazilim}</b>Kodlama, algoritma, uygulama geliştirme</label>
+          <input type="radio" name="branch" id="bB" value="bt" ${authBranch==='bt'?'checked':''}><label for="bB"><b>${BRANCH.bt}</b>Bilişim teknolojileri, donanım, ağlar, dijital güvenlik</label>
+        </div></div>`:''}
+      <div class="f"><label for="aUser">Kullanıcı adı</label><input id="aUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="örn. ayse.yilmaz"></div>
+      <div class="f"><label for="aPw">Şifre</label><input id="aPw" type="password" autocomplete="${reg?'new-password':'current-password'}"></div>
+      ${reg?`<div class="f"><label for="aPw2">Şifre (tekrar)</label><input id="aPw2" type="password" autocomplete="new-password"></div>
+      <p class="hint">Kullanıcı adı: 3–20 karakter, küçük harf, rakam, nokta, alt çizgi. Şifre en az 6 karakter.</p>`:''}
+      <p class="err" id="aErr" hidden></p>
+      <button class="btn pri" type="submit" id="aBtn">${reg?'Kayıt ol':'Giriş yap'}</button>
+      ${!reg&&ACC()?'<button class="linkbtn" type="button" id="forgot">Şifremi unuttum</button>':''}
+    </form></div>`;
+  c.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>showAuth(b.dataset.m));
+  c.querySelectorAll('input[name=role]').forEach(r=>r.onchange=()=>{authRole=r.value;const bb=$('#branchBox');if(bb)bb.hidden=authRole!=='ogretmen'});
+  c.querySelectorAll('input[name=branch]').forEach(r=>r.onchange=()=>authBranch=r.value);
+  if(ACC()&&!reg)$('#aUser').value=ACC().username;
+  const fg=$('#forgot');if(fg)fg.onclick=()=>showAuth('reset');
+  $('#authF').onsubmit=async e=>{e.preventDefault();const b=$('#aBtn');b.disabled=true;
+    try{reg?await doRegister():await doLogin()}catch(err){console.warn(err);aErr(failMsg(err))}finally{if(b.isConnected)b.disabled=false}};
+}
+function aErr(m){const e=$('#aErr');e.textContent=m;e.hidden=false}
+
+async function doRegister(){
+  const name=$('#aUser').value.trim().toLowerCase(),pw=$('#aPw').value,role=document.querySelector('input[name=role]:checked').value;
+  if(!/^[a-z0-9._]{3,20}$/.test(name))return aErr('Kullanıcı adı 3–20 karakter olmalı; yalnızca küçük harf, rakam, nokta ve alt çizgi kullan.');
+  if(pw.length<6)return aErr('Şifre en az 6 karakter olmalı.');
+  if(pw!==$('#aPw2').value)return aErr('Şifreler aynı değil.');
+  const branch=role==='ogretmen'?(document.querySelector('input[name=branch]:checked')||{}).value:null;
+  if(role==='ogretmen'&&!BRANCH[branch])return aErr('Branşını seç: Yazılım Öğretmeni ya da Bilişim Teknolojileri ve Teknoloji Öğretmeni.');
+  if(Object.values(M.accounts).some(a=>a.username===name))return aErr('Bu kullanıcı adı alınmış, başka bir tane dene.');
+  let uid;try{uid=await BACK.register(name,pw)}catch(e){return aErr(e.message)}
+  ME=uid;
+  const acc=branch?{username:name,role,branch,createdAt:Date.now()}:{username:name,role,createdAt:Date.now()};
+  await db.doc('accounts/'+ME).set(acc);M.accounts[ME]=acc;computeOwner();
+  if(role==='ogretmen'&&OWNER)await db.doc('config/teachers').set({uids:[...new Set([...M.teachers,ME])]});
+  logged=true;enterApp();
+  toast(role==='ogretmen'&&!amTeacher()?'Kayıt tamam. Öğretmen hesabın site yöneticisinin onayını bekliyor.':'Kayıt tamam, hoş geldin @'+name);
+}
+async function doLogin(){
+  const name=$('#aUser').value.trim().toLowerCase(),pw=$('#aPw').value,role=document.querySelector('input[name=role]:checked').value;
+  if(!name||!pw)return aErr('Kullanıcı adı ve şifreyi yaz.');
+  let uid;try{uid=await BACK.login(name,pw)}catch(e){return aErr(e.message)}
+  const acc=M.accounts[uid];
+  if(!acc){await BACK.logout();return aErr('Bu kullanıcının hesap kaydı bulunamadı. Kayıt ol sekmesinden yeniden kayıt ol.')}
+  if(acc.role!==role){await BACK.logout();return aErr(acc.role==='ogretmen'?'Bu bir öğretmen hesabı. Öğretmen girişini seç.':'Bu bir öğrenci hesabı. Öğrenci girişini seç.')}
+  ME=uid;computeOwner();logged=true;enterApp();toast('Giriş yapıldı');
+}
+async function logout(){try{await BACK.logout()}catch(e){}ME=null;OWNER=false;logged=false;showAuth('login')}
+
+/* ---------- uygulama ---------- */
+const VIEWS=['panel','canli','konular','siniflar','odevler','oyun','galeri'];
+function showGuest(){authMode='guest';$('#auth').hidden=true;$('#app').hidden=true;$('#guest').hidden=false;renderGallery();window.scrollTo(0,0)}
+$('#guestBtn').onclick=showGuest;
+$('#guestBack').onclick=()=>showAuth(Object.keys(M.accounts).length?'login':'register');
+let view='panel';
+function go(v){
+  if(!VIEWS.includes(v))v='panel';view=v;
+  VIEWS.forEach(x=>$('#v-'+x).hidden=x!==v);
+  document.querySelectorAll('#nav button').forEach(b=>{if(b.dataset.v===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  try{history.replaceState(null,'','#'+v)}catch(e){}
+  window.scrollTo(0,0);
+}
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(b.dataset.v)});
+function enterApp(){$('#auth').hidden=true;$('#guest').hidden=true;$('#app').hidden=false;authMode=null;renderAll();renderEditor();render3dEditor();go((location.hash||'').slice(1))}
+
+function onData(){
+  if(!M.ready.has('accounts'))return;
+  computeOwner();
+  if(authMode==='guest'){renderGallery();return}
+  if(logged&&ACC()){if($('#app').hidden)enterApp();else renderAll();return}
+  if(logged&&!ACC()){logged=false;sess.set(null)}
+  if(!authMode)showAuth(Object.keys(M.accounts).length?'login':'register');
+}
+
+/* ders zamanı */
+const lStart=l=>new Date(l.date+'T'+l.time);
+const lEnd=l=>new Date(lStart(l).getTime()+l.dur*60000);
+function lStatus(l){const n=Date.now();if(n<lStart(l))return 'soon';if(n<lEnd(l))return 'live';return 'done'}
+function until(ms){const m=Math.max(0,Math.round(ms/60000)),d=Math.floor(m/1440),h=Math.floor(m%1440/60),mm=m%60;return d?`${d} gün ${h} sa`:h?`${h} sa ${mm} dk`:`${mm} dk`}
+function fmtDate(l){return lStart(l).toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long'})+' · '+l.time}
+const clsName=id=>(M.classes.find(c=>c.id===id)||{}).name||'';
+function gcal(l){
+  const f=x=>x.getFullYear()+p2(x.getMonth()+1)+p2(x.getDate())+'T'+p2(x.getHours())+p2(x.getMinutes())+'00';
+  let tz='Europe/Istanbul';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||tz}catch(e){}
+  const det=`BigTekno canlı dersi\nSınıf: ${clsName(l.cls)}\nKonu: ${topicName(l.topic)}\nÖğretmen: @${uname(l.teacher)}\nGoogle Meet: ${l.meet}`;
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(l.title)+'&dates='+f(lStart(l))+'/'+f(lEnd(l))+'&ctz='+encodeURIComponent(tz)+'&details='+encodeURIComponent(det)+'&location='+encodeURIComponent(l.meet);
+}
+const pillFor=s=>s==='live'?'<span class="pill live">Canlı</span>':s==='soon'?'<span class="pill soon">Yaklaşan</span>':'<span class="pill done">Bitti</span>';
+
+function renderWho(){
+  const a=ACC();
+  $('#who').innerHTML=`<span class="u">@${esc(a.username)}</span><span class="mono small" style="color:var(--cyan)">Sv ${levelOf(myXp()).n}</span><span class="role ${a.role==='ogretmen'?'t':'s'}">${a.role==='ogretmen'?(BRANCH_SHORT[a.branch]||'Öğretmen')+(amTeacher()?'':' · onay bekliyor'):'Öğrenci'}</span><button class="btn ghost sm" id="logout">Çıkış yap</button>`;
+  $('#logout').onclick=logout;
+}
+
+function renderPanel(){
+  const a=ACC(),T_=amTeacher();
+  $('#hello').textContent='Hoş geldin, @'+a.username;
+  $('#helloSub').textContent=(a.role==='ogretmen'&&BRANCH[a.branch]?BRANCH[a.branch]+' · ':'')+(T_?'Sınıflarını yönet, canlı ders planla, öğrencilerinin test sonuçlarını izle.':a.role==='ogretmen'?'Hesabın onaylandığında sınıf oluşturup ders açabileceksin.':'Sınıfına kodla katıl, canlı derslere gir, testleri çöz.');
+  const needBranch=a.role==='ogretmen'&&!BRANCH[a.branch];
+  $('#pendingNote').innerHTML=(needBranch?`<form class="notice" id="branchFix" style="display:grid;gap:10px;margin-bottom:10px"><b>Branşını seç</b><div class="row"><select id="bfSel" style="width:auto;flex:1;min-width:220px"><option value="yazilim">${BRANCH.yazilim}</option><option value="bt">${BRANCH.bt}</option></select><button class="btn pri sm" type="submit">Kaydet</button></div></form>`:'')+(pendingTeacher()?'<div class="notice">Öğretmen hesabın site yöneticisinin onayını bekliyor. Onaylanana kadar testleri ve oyunları kullanabilirsin; sınıf ve ders oluşturma onaydan sonra açılır.</div>':'');
+  const up=myLessons().filter(l=>lStatus(l)!=='done'),n=up[0];
+  $('#nextLesson').innerHTML=n?`<div class="eyebrow">${lStatus(n)==='live'?'// şu an canlı':'// sıradaki canlı ders'}</div>
+    <h3 style="font-size:1.4rem">${esc(n.title)}</h3>
+    <p class="muted small" style="margin-top:4px">${esc(fmtDate(n))} · ${esc(clsName(n.cls))}</p>
+    <div class="count" style="margin:16px 0">${lStatus(n)==='live'?'CANLI':until(lStart(n)-Date.now())}</div>
+    <div class="row"><a class="btn pri" href="${esc(n.meet)}" target="_blank" rel="noopener">Meet'e katıl ↗</a><a class="btn" href="${esc(gcal(n))}" target="_blank" rel="noopener">Takvime ekle ↗</a></div>`
+    :`<div class="eyebrow">// sıradaki canlı ders</div><h3>Planlı ders yok</h3><p class="muted small" style="margin:6px 0 14px">${T_?'Canlı Ders sekmesinden ilk dersini planla.':myClassIds().length?'Öğretmenin ders planladığında burada görünecek.':'Önce Sınıflar sekmesinden sınıf koduyla bir sınıfa katıl.'}</p>
+      <button class="btn pri" data-go="${T_?'canli':'siniflar'}">${T_?'Ders planla':'Sınıflara git'}</button>`;
+  const sc=myScores(),done=Object.keys(sc).filter(k=>!k.startsWith('oyun-')&&!k.startsWith('pk-')).length;
+  const students=new Set(Object.entries(M.members).filter(([,m])=>(m.classes||[]).some(c=>myClassIds().includes(c))).map(([id])=>id));
+  const st=T_?[[myClassIds().length,'Sınıfım'],[students.size,'Öğrencim'],[up.length,'Planlı canlı ders'],[myHw().filter(a=>new Date(a.due)>Date.now()).length,'Aktif ödev']]
+             :[[myClassIds().length,'Katıldığım sınıf'],[up.length,'Yaklaşan ders'],[done+'/12','Çözülen test'],[myHw().filter(a=>!mySub(a.id)).length,'Bekleyen ödev']];
+  $('#stats').innerHTML=st.map(([n,l])=>`<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+  $('#prog').innerHTML=`<div class="pr small mono muted"><span></span><span class="lv-kolay">Kolay</span><span class="lv-orta">Orta</span><span class="lv-zor">Zor</span></div>`+
+    T.map(t=>`<div class="pr"><span class="small">${t.name}</span>${Object.keys(LV).map(k=>{const v=sc[t.id+'-'+k]||0;
+      return `<div class="bar" title="${LV[k]}: ${v}/5"><i style="width:${v*20}%;background:${LVC[k]}"></i></div>`}).join('')}</div>`).join('');
+  // sahip: öğretmen onayları
+  const ap=$('#approvals');
+  if(OWNER&&TEACHER_APPROVAL){
+    const reqs=Object.entries(M.accounts).filter(([id,a])=>a.role==='ogretmen'&&id!==ME);
+    ap.hidden=false;
+    ap.innerHTML=`<div class="head" style="margin-bottom:10px"><h3>Öğretmen hesapları</h3><span class="small muted">Yalnızca site yöneticisi görür</span></div>`+
+      (reqs.length?`<div class="tbl"><table><thead><tr><th>Kullanıcı adı</th><th>Branş</th><th>Meet kodu</th><th>Durum</th><th></th></tr></thead><tbody>${reqs.map(([id,a])=>{const ok=M.teachers.includes(id);
+        return `<tr><td class="mono">@${esc(a.username)}</td><td class="small">${esc(BRANCH[a.branch]||'—')}</td><td class="mono small">${a.meet?esc(meetCode(a.meet)):'—'}</td><td>${ok?'<span class="role t">Onaylı</span>':'<span class="pill soon">Onay bekliyor</span>'}</td>
+        <td style="text-align:right">${ok?`<button class="btn del sm" data-revoke="${id}">Yetkiyi kaldır</button>`:`<button class="btn pri sm" data-approve="${id}">Onayla</button>`}</td></tr>`}).join('')}</tbody></table></div>`
+       :'<p class="small muted">Öğretmen olarak kayıt olan biri olduğunda burada onaylayabilirsin.</p>');
+  }else ap.hidden=true;
+}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
+$('#pendingNote').addEventListener('submit',e=>{if(e.target.id!=='branchFix')return;e.preventDefault();const v=$('#bfSel').value;
+  write(()=>db.doc('accounts/'+ME).update({branch:v}),'Branşın kaydedildi').then(ok=>{if(ok){M.accounts[ME]={...M.accounts[ME],branch:v};renderAll()}})});
+$('#approvals').addEventListener('click',e=>{
+  const a=e.target.closest('[data-approve]'),r=e.target.closest('[data-revoke]');
+  if(a)write(()=>db.doc('config/teachers').set({uids:[...new Set([...M.teachers,a.dataset.approve,ME])]}),'Öğretmen onaylandı');
+  if(r)armDelete(r,()=>write(()=>db.doc('config/teachers').set({uids:M.teachers.filter(x=>x!==r.dataset.revoke)}),'Öğretmen yetkisi kaldırıldı'));
+});
+
+function lessonCard(l){
+  const s=lStatus(l);
+  return `<article class="card lesson ${s==='live'?'is-live':''}">
+    <div class="row">${pillFor(s)}<span class="small muted">${esc(clsName(l.cls))}</span></div>
+    <h3>${esc(l.title)}</h3>
+    <div class="meta"><span>${esc(fmtDate(l))}</span><span class="mono">${l.dur} dk</span></div>
+    <div class="meta"><span>${esc(topicName(l.topic))}</span><span class="mono">@${esc(uname(l.teacher))}</span>${meetCode(l.meet)?`<span class="mono" style="color:var(--cyan)">Meet: ${esc(meetCode(l.meet))}</span>`:''}</div>
+    ${s==='soon'?`<p class="small mono" style="color:var(--cyan)">Başlamasına ${until(lStart(l)-Date.now())}</p>`:''}
+    <div class="row">
+      <a class="btn ${s==='live'?'pri':''} sm" href="${esc(l.meet)}" target="_blank" rel="noopener">Meet'e katıl ↗</a>
+      <a class="btn sm" href="${esc(gcal(l))}" target="_blank" rel="noopener">Takvime ekle ↗</a>
+      ${l.teacher===ME?`<button class="btn del sm" data-del-lesson="${l.id}">Sil</button>`:''}
+    </div></article>`;
+}
+function renderLessons(){
+  const T_=amTeacher();
+  $('#lessonForm').hidden=!T_;$('#meetRoom').hidden=!T_;
+  if(T_){const room=myRoom();
+    $('#meetNow').innerHTML=room?`<div class="small muted">Odanın kodu</div><div class="row"><span class="code-big">${esc(meetCode(room))}</span><button class="btn sm ghost" type="button" data-copy-meet="${esc(room)}">Bağlantıyı kopyala</button><a class="btn sm" href="${esc(room)}" target="_blank" rel="noopener">Odaya gir ↗</a></div>`
+      :'<div class="notice">Henüz Meet odan yok. Aşağıya kişisel Meet bağlantını ekle; öğrencilerin seni hep bu kodla bulur.</div>';
+    if(!$('#mRoom').value&&room&&document.activeElement!==$('#mRoom'))$('#mRoom').value=room;
+    if(!$('#lMeet').value&&room&&document.activeElement!==$('#lMeet'))$('#lMeet').value=room;}
+  $('#liveSub').textContent=T_?'Sınıfın için ders planla, Meet bağlantısını ekle. Öğrencilerin dersi kendi panellerinde görür ve takvimlerine ekler.':'Katıldığın sınıfların canlı dersleri. "Takvime ekle" ile Google Takvim\'ine kaydet.';
+  const L=myLessons();
+  $('#lessonList').innerHTML=L.length?L.map(lessonCard).join(''):`<p class="muted">${T_?(myClassIds().length?'Henüz planlı ders yok. Yukarıdaki formdan ilk canlı dersini ekle.':'Ders planlamak için önce Sınıflar sekmesinden bir sınıf oluştur.'):(myClassIds().length?'Öğretmenin henüz ders planlamadı.':'Önce Sınıflar sekmesinden sınıf koduyla bir sınıfa katıl.')}</p>`;
+}
+$('#lessonList').addEventListener('click',e=>{const b=e.target.closest('[data-del-lesson]');if(!b)return;
+  armDelete(b,()=>write(()=>db.doc('lessons/'+b.dataset.delLesson).delete(),'Ders silindi'))});
+$('#lessonForm').addEventListener('submit',async e=>{
+  e.preventDefault();const err=$('#lErr');
+  const l={title:$('#lTitle').value.trim(),topic:$('#lTopic').value,cls:$('#lClass').value,date:$('#lDate').value,time:$('#lTime').value,dur:+$('#lDur').value||40,meet:$('#lMeet').value.trim(),teacher:ME};
+  let m='';
+  if(!l.title)m='Ders başlığını yaz.';
+  else if(!l.cls)m='Önce bir sınıf oluşturup burada seç.';
+  else if(!l.date||!l.time)m='Tarih ve saati seç.';
+  else if(!meetCode(l.meet))m='Meet bağlantısı https://meet.google.com/abc-defg-hij biçiminde olmalı.';
+  else if(roomOwner(l.meet)&&roomOwner(l.meet)!==ME)m=`Bu Meet kodu @${uname(roomOwner(l.meet))} öğretmenine ait. Kendi odanı kullan.`;
+  if(m){err.textContent=m;err.hidden=false;return}
+  err.hidden=true;l.meet=normMeet(l.meet);
+  if(await write(()=>db.doc('lessons/'+uid8()).set(l),'Ders kaydedildi. Öğrencilerin panelinde görünecek.')){
+    $('#lTitle').value='';$('#lMeet').value=myRoom()||'';}
+});
+/* öğretmenin Meet odası */
+function meetCode(u){const m=String(u||'').trim().match(/^https:\/\/meet\.google\.com\/([a-z]{3}-[a-z]{4}-[a-z]{3})(?:[/?#].*)?$/i);return m?m[1].toLowerCase():''}
+const normMeet=u=>'https://meet.google.com/'+meetCode(u);
+const roomOf=id=>(M.accounts[id]||{}).meet||'';
+const myRoom=()=>roomOf(ME);
+function roomOwner(u){const c=meetCode(u);if(!c)return null;const hit=Object.entries(M.accounts).find(([,a])=>a.meet&&meetCode(a.meet)===c);return hit?hit[0]:null}
+$('#meetRoom').addEventListener('submit',async e=>{
+  e.preventDefault();const err=$('#mErr'),v=$('#mRoom').value.trim();let m='';
+  if(!meetCode(v))m='Bağlantı https://meet.google.com/abc-defg-hij biçiminde olmalı. "meet.google.com/new" adresini değil, toplantı açıldıktan sonraki adresi yapıştır.';
+  else if(roomOwner(v)&&roomOwner(v)!==ME)m=`Bu Meet kodu @${uname(roomOwner(v))} öğretmenine ait. Her öğretmenin farklı bir odası olmalı.`;
+  if(m){err.textContent=m;err.hidden=false;return}
+  err.hidden=true;const url=normMeet(v);
+  if(await write(()=>db.doc('accounts/'+ME).update({meet:url}),'Meet odan kaydedildi: '+meetCode(url))){M.accounts[ME]={...M.accounts[ME],meet:url};$('#lMeet').value=url;renderAll()}
+});
+$('#meetNow').addEventListener('click',e=>{const b=e.target.closest('[data-copy-meet]');if(!b)return;
+  try{navigator.clipboard.writeText(b.dataset.copyMeet).then(()=>toast('Meet bağlantısı kopyalandı'),()=>toast('Kopyalanamadı, bağlantıyı seçip kopyala'))}catch(_){toast('Kopyalanamadı, bağlantıyı seçip kopyala')}
+});
+
+/* sınıflar */
+function renderClasses(){
+  const T_=amTeacher(),a=ACC();
+  $('#classForm').hidden=!T_;$('#joinForm').hidden=a.role!=='ogrenci';
+  $('#classPending').innerHTML=pendingTeacher()?'<div class="notice">Sınıf oluşturmak için öğretmen hesabının onaylanması gerekiyor.</div>':'';
+  $('#classSub').textContent=T_?'Sınıf oluştur, kodunu öğrencilerine ver. Classroom sınıfının bağlantısını da ekleyebilirsin.':a.role==='ogrenci'?'Öğretmeninin verdiği sınıf koduyla sınıfa katıl.':'Onaydan sonra burada sınıf oluşturabileceksin.';
+  if(T_){
+    const mine=M.classes.filter(c=>c.teacher===ME);
+    $('#classList').innerHTML=mine.length?mine.map(c=>{
+      const studs=Object.entries(M.members).filter(([,m])=>(m.classes||[]).includes(c.id));
+      const rows=studs.map(([id,m])=>{const s=(M.scores[id]||{}).s||{};const keys=Object.keys(s).filter(k=>!k.startsWith('oyun-')&&!k.startsWith('pk-'));
+        return `<tr><td class="mono">@${esc(m.username||uname(id))}</td><td class="n">${levelOf(xpOf(id)).n}</td><td class="n">${keys.length}/12</td><td class="n">${keys.reduce((t,k)=>t+(+s[k]||0),0)}</td></tr>`}).join('');
+      return `<article class="card" style="display:grid;gap:12px;align-content:start">
+        <h3>${esc(c.name)}</h3>
+        <div><div class="small muted">Sınıf kodu</div><div class="row"><span class="code-big">${esc(c.code)}</span><button class="btn sm ghost" data-copy="${esc(c.code)}">Kopyala</button></div></div>
+        <p class="small muted mono">${studs.length} öğrenci · ${M.lessons.filter(l=>l.cls===c.id&&lStatus(l)!=='done').length} yaklaşan ders</p>
+        ${studs.length?`<div class="tbl"><table><thead><tr><th>Öğrenci</th><th>Seviye</th><th>Test</th><th>Doğru</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<p class="small muted">Henüz katılan öğrenci yok. Kodu öğrencilerine gönder.</p>'}
+        <div class="row">${c.url?`<a class="btn sm" href="${esc(c.url)}" target="_blank" rel="noopener">Classroom'da aç ↗</a>`:''}<button class="btn del sm" data-del-class="${c.id}">Sınıfı sil</button></div></article>`}).join('')
+      :'<p class="muted">Henüz sınıfın yok. Yukarıdan ilk sınıfını oluştur.</p>';
+  }else if(a.role==='ogrenci'){
+    const ids=myClassIds();
+    $('#classList').innerHTML=ids.length?ids.map(id=>{const c=M.classes.find(x=>x.id===id);
+      return `<article class="card" style="display:grid;gap:10px">
+        <h3>${esc(c.name)}</h3><p class="small muted">Öğretmen <span class="mono" style="color:var(--fg)">@${esc(uname(c.teacher))}</span>${branchOf(c.teacher)?`<br><span class="brn">${esc(branchOf(c.teacher))}</span>`:''}</p>
+        ${roomOf(c.teacher)?`<div class="row small"><span class="muted">Canlı ders odası</span><span class="mono" style="color:var(--cyan)">${esc(meetCode(roomOf(c.teacher)))}</span><a class="btn sm ghost" href="${esc(roomOf(c.teacher))}" target="_blank" rel="noopener">Odaya gir ↗</a></div>`:''}
+        <p class="small mono" style="color:var(--cyan)">${M.lessons.filter(l=>l.cls===id&&lStatus(l)!=='done').length} yaklaşan ders</p>
+        <div class="row">${c.url?`<a class="btn sm" href="${esc(c.url)}" target="_blank" rel="noopener">Classroom'da aç ↗</a>`:''}<button class="btn del sm" data-leave="${id}">Sınıftan ayrıl</button></div></article>`}).join('')
+      :'<p class="muted">Henüz bir sınıfa katılmadın. Öğretmeninden sınıf kodunu iste ve yukarıya yaz.</p>';
+  }else $('#classList').innerHTML='';
+}
+$('#classList').addEventListener('click',e=>{
+  const cp=e.target.closest('[data-copy]');
+  if(cp){const v=cp.dataset.copy;try{navigator.clipboard.writeText(v).then(()=>toast('Sınıf kodu kopyalandı'),()=>toast('Kopyalanamadı, kodu seçip kopyala'))}catch(_){toast('Kopyalanamadı, kodu seçip kopyala')}return}
+  const d=e.target.closest('[data-del-class]');
+  if(d)return armDelete(d,()=>write(async()=>{const id=d.dataset.delClass;for(const l of M.lessons.filter(l=>l.cls===id))await db.doc('lessons/'+l.id).delete();await db.doc('classes/'+id).delete()},'Sınıf silindi'));
+  const lv=e.target.closest('[data-leave]');
+  if(lv)armDelete(lv,()=>write(()=>db.doc('members/'+ME).set({username:ACC().username,classes:myClassIds().filter(x=>x!==lv.dataset.leave)}),'Sınıftan ayrıldın'));
+});
+function newCode(){const ch='abcdefghjkmnpqrstuvwxyz23456789';let c;do{c=Array.from(crypto.getRandomValues(new Uint8Array(6)),b=>ch[b%ch.length]).join('')}while(M.classes.some(x=>x.code===c));return c}
+$('#classForm').addEventListener('submit',async e=>{
+  e.preventDefault();const err=$('#cErr');
+  const c={name:$('#cName').value.trim(),url:$('#cUrl').value.trim(),code:newCode(),teacher:ME,createdAt:Date.now()};
+  let m='';
+  if(!amTeacher())m='Sınıfı yalnızca onaylı öğretmenler oluşturabilir.';
+  else if(!c.name)m='Sınıf adını yaz.';
+  else if(c.url&&!/^https:\/\/classroom\.google\.com\//.test(c.url))m='Classroom bağlantısı https://classroom.google.com/ ile başlamalı.';
+  if(m){err.textContent=m;err.hidden=false;return}
+  err.hidden=true;
+  if(await write(()=>db.doc('classes/'+uid8()).set(c),'Sınıf oluşturuldu. Kod: '+c.code)){$('#cName').value='';$('#cUrl').value=''}
+});
+$('#joinForm').addEventListener('submit',async e=>{
+  e.preventDefault();const err=$('#jErr'),code=$('#jCode').value.trim().toLowerCase();
+  const c=M.classes.find(x=>x.code===code);
+  let m='';
+  if(!code)m='Sınıf kodunu yaz.';
+  else if(!c||!isTeacherId(c.teacher))m='Bu kodla bir sınıf bulunamadı. Kodu öğretmeninden kontrol et.';
+  else if(myClassIds().includes(c.id))m='Bu sınıfa zaten katıldın.';
+  if(m){err.textContent=m;err.hidden=false;return}
+  err.hidden=true;
+  if(await write(()=>db.doc('members/'+ME).set({username:ACC().username,classes:[...myClassIds(),c.id]}),c.name+' sınıfına katıldın'))$('#jCode').value='';
+});
+
+/* ödevler */
+const ART_URL=location.origin+location.pathname;
+const KIND={test:'KONU TESTİ',game:'OYUN',task:'GÖREV'};
+const myHw=()=>{const ids=myClassIds();return M.assigns.filter(a=>ids.includes(a.cls)&&(!amTeacher()||a.teacher===ME)).sort((a,b)=>new Date(a.due)-new Date(b.due))};
+const subOf=(sid,aid)=>(((M.subs[sid]||{}).items)||{})[aid];
+const mySub=aid=>subOf(ME,aid);
+const fmtDue=a=>new Date(a.due).toLocaleString('tr-TR',{weekday:'short',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+function hwResult(a,s){if(!s)return '—';if(a.kind==='task')return 'Yazılı teslim';return s.total?`${s.score}/${s.total}`:`${s.score} puan`}
+function hwStatus(a,s){const late=Date.now()>new Date(a.due);
+  if(s)return s.at>new Date(a.due).getTime()?'<span class="pill late">Geç teslim</span>':'<span class="pill ok">Teslim edildi</span>';
+  return late?'<span class="pill miss">Teslim edilmedi</span>':`<span class="pill soon">${until(new Date(a.due)-Date.now())} kaldı</span>`}
+function classroomLink(a){
+  const c=M.classes.find(x=>x.id===a.cls)||{};
+  const what=a.kind==='test'?`${topicName(a.topic)} · ${LV[a.level]} testini çöz.`:a.kind==='game'?`"${(findGame(a.gameId,a.teacher)||{}).title||'Oyun'}" oyununu oyna.`:'Görevi yap ve BigTekno üzerinden yazılı teslim et.';
+  const body=`${a.desc?a.desc+'\n\n':''}${what}\nSon teslim: ${fmtDue(a)}\nBigTekno'da Ödevler sekmesinden aç. Sınıf kodu: ${c.code||''}`;
+  return 'https://classroom.google.com/share?url='+encodeURIComponent(ART_URL+'#odevler')+'&title='+encodeURIComponent(a.title)+'&body='+encodeURIComponent(body)+'&itemtype=assignment';
+}
+async function submitHw(aid,res){
+  const items={...(((M.subs[ME]||{}).items)||{})},old=items[aid];
+  if(old&&old.score!=null&&res.score!=null&&old.score>=res.score&&!res.note)return;
+  items[aid]={...(old||{}),...res,at:old?old.at:Date.now(),updatedAt:Date.now()};
+  if(await write(()=>db.doc('subs/'+ME).set({username:ACC().username,items}),old?'Ödev sonucun güncellendi':'Ödev teslim edildi'))M.subs[ME]={username:ACC().username,items};
+}
+function renderHw(){
+  const T_=amTeacher(),a0=ACC();
+  $('#hwForm').hidden=!T_;
+  $('#hwPending').innerHTML=pendingTeacher()?'<div class="notice">Ödev vermek için öğretmen hesabının onaylanması gerekiyor.</div>':'';
+  $('#hwSub').textContent=T_?'Sınıfına test, oyun ya da yazılı görev ver. "Classroom\'a gönder" ödevi Google Classroom\'da açar; orada sınıfını seçip paylaşırsın.':'Öğretmenlerinin verdiği ödevler. Son teslim tarihinden önce tamamla.';
+  const keep={},foc=document.activeElement&&document.activeElement.id;
+  document.querySelectorAll('#hwList textarea').forEach(t=>keep[t.id]=t.value);
+  const L=myHw();
+  if(!L.length){$('#hwList').innerHTML=`<p class="muted">${T_?(myClassIds().length?'Henüz ödev vermedin. Yukarıdaki formdan ilk ödevini ver.':'Ödev vermek için önce Sınıflar sekmesinden bir sınıf oluştur.'):a0.role==='ogrenci'?(myClassIds().length?'Şu an ödevin yok.':'Ödevleri görmek için önce bir sınıfa katıl.'):''}</p>`;return}
+  $('#hwList').innerHTML=L.map(a=>{
+    const head=`<div class="row"><span class="kind">${KIND[a.kind]}</span><span class="small muted">${esc(clsName(a.cls))}</span><span class="small mono muted">Son teslim: ${esc(fmtDue(a))}</span></div>
+      <h3>${esc(a.title)}</h3>${a.desc?`<p class="desc small">${esc(a.desc)}</p>`:''}`;
+    if(T_){
+      const studs=Object.entries(M.members).filter(([,m])=>(m.classes||[]).includes(a.cls));
+      const done=studs.filter(([id])=>subOf(id,a.id)).length;
+      return `<article class="card hw">${head}
+        <div class="row small"><span class="mono">${done}/${studs.length} teslim</span><div class="hwbar" style="flex:1;min-width:120px"><i style="width:${studs.length?done/studs.length*100:0}%"></i></div></div>
+        ${studs.length?`<details><summary>Öğrenci durumu</summary><div class="tbl"><table><thead><tr><th>Öğrenci</th><th>Durum</th><th>Sonuç</th><th>Not</th></tr></thead><tbody>
+          ${studs.map(([id,m])=>{const s=subOf(id,a.id);return `<tr><td class="mono">@${esc(m.username||uname(id))}</td><td>${hwStatus(a,s)}</td><td class="n">${hwResult(a,s)}</td><td class="small">${s&&s.note?esc(s.note):''}</td></tr>`}).join('')}
+        </tbody></table></div></details>`:'<p class="small muted">Bu sınıfta henüz öğrenci yok.</p>'}
+        <div class="row"><a class="btn sm" href="${esc(classroomLink(a))}" target="_blank" rel="noopener">Classroom'a gönder ↗</a><button class="btn del sm" data-del-hw="${a.id}">Sil</button></div>
+      </article>`}
+    const s=mySub(a.id),open=Date.now()<=new Date(a.due);
+    const act=a.kind==='task'
+      ?(s?`<p class="small"><span class="muted">Teslimin:</span> ${esc(s.note||'')}</p>`:'')+`<div class="f"><label for="note-${a.id}">${s?'Teslimini güncelle':'Cevabın'}</label><textarea id="note-${a.id}" placeholder="Görevin cevabını buraya yaz"></textarea></div><div class="row"><button class="btn pri sm" data-hw-task="${a.id}">${s?'Güncelle':'Teslim et'}</button></div>`
+      :`<div class="row"><button class="btn ${s?'':'pri'} sm" data-hw-go="${a.id}">${a.kind==='test'?(s?'Tekrar çöz':'Teste başla'):(s?'Tekrar oyna':'Oyunu oyna')}</button>${s?`<span class="small mono" style="color:var(--cyan)">Sonucun: ${hwResult(a,s)}</span>`:''}</div>`;
+    return `<article class="card hw">${head}<div class="row">${hwStatus(a,s)}${!open&&!s?'<span class="small muted">Geç teslim yine de kaydedilir.</span>':''}</div>${act}</article>`;
+  }).join('');
+  for(const[id,v]of Object.entries(keep)){const t=document.getElementById(id);if(t)t.value=v}
+  if(foc&&foc.startsWith('note-')){const t=document.getElementById(foc);if(t)t.focus()}
+}
+$('#hwKind').addEventListener('change',()=>{const k=$('#hwKind').value;document.querySelectorAll('#hwForm [data-for]').forEach(el=>el.hidden=el.dataset.for!==k)});
+$('#hwForm').addEventListener('submit',async e=>{
+  e.preventDefault();const err=$('#hwErr');
+  const a={cls:$('#hwClass').value,kind:$('#hwKind').value,topic:$('#hwTopic').value,level:$('#hwLevel').value,gameId:$('#hwGame').value,
+    title:$('#hwTitle').value.trim(),desc:$('#hwDesc').value.trim(),due:$('#hwDue').value+'T'+($('#hwDueTime').value||'23:59'),teacher:ME,createdAt:Date.now()};
+  let m='';
+  if(!amTeacher())m='Ödevi yalnızca onaylı öğretmenler verebilir.';
+  else if(!a.cls)m='Önce bir sınıf oluşturup burada seç.';
+  else if(a.kind==='game'&&!a.gameId)m='Oyun ödevi için önce Oyun Yap sekmesinde bir oyun kaydet.';
+  else if(a.kind==='task'&&!a.desc)m='Serbest görev için açıklamaya ne yapılacağını yaz.';
+  else if(!$('#hwDue').value)m='Son teslim tarihini seç.';
+  if(m){err.textContent=m;err.hidden=false;return}
+  err.hidden=true;
+  if(!a.title)a.title=a.kind==='test'?`${topicName(a.topic)} · ${LV[a.level]} testi`:a.kind==='game'?(findGame(a.gameId,ME)||{}).title||'Oyun ödevi':'Görev';
+  if(a.kind!=='test'){delete a.topic;delete a.level}if(a.kind!=='game')delete a.gameId;
+  if(await write(()=>db.doc('assignments/'+uid8()).set(a),'Ödev verildi. Classroom\'a göndermek için karttaki butonu kullan.')){$('#hwTitle').value='';$('#hwDesc').value=''}
+});
+$('#hwList').addEventListener('click',e=>{
+  const d=e.target.closest('[data-del-hw]');
+  if(d)return armDelete(d,()=>write(()=>db.doc('assignments/'+d.dataset.delHw).delete(),'Ödev silindi'));
+  const g=e.target.closest('[data-hw-go]');
+  if(g){const a=M.assigns.find(x=>x.id===g.dataset.hwGo);if(!a)return;
+    if(a.kind==='test'){const t=T.find(x=>x.id===a.topic);startQuiz(`Ödev · ${t.name} · ${LV[a.level]}`,t.L[a.level].map(toQ),{key:t.id+'-'+a.level,color:LVC[a.level],assign:a.id})}
+    else{const gm=findGame(a.gameId,a.teacher);if(!gm)return toast('Bu oyun öğretmen tarafından silinmiş.');playGame(gm,{assign:a.id})}}
+  const tk=e.target.closest('[data-hw-task]');
+  if(tk){const ta=$('#note-'+tk.dataset.hwTask),v=ta.value.trim();if(!v)return toast('Önce cevabını yaz.');submitHw(tk.dataset.hwTask,{note:v.slice(0,2000)})}
+});
+
+/* konular */
+/* seviye sistemi */
+const LVL=[[0,'Çaylak'],[50,'Meraklı'],[150,'Kaşif'],[300,'Teknisyen'],[500,'Kodlayıcı'],[800,'Mühendis'],[1200,'Uzman'],[1700,'Usta'],[2300,'Siber Bilge'],[3000,'BigTekno Efsanesi']];
+function levelOf(xp){let i=0;while(i+1<LVL.length&&xp>=LVL[i+1][0])i++;return{n:i+1,title:LVL[i][1],from:LVL[i][0],to:LVL[i+1]?LVL[i+1][0]:null}}
+const xpOf=id=>+((M.scores[id]||{}).xp)||0;
+const myXp=()=>xpOf(ME);
+function saveScores(sc,xp){const body={username:ACC().username,s:sc,xp:xp??myXp()};M.scores[ME]=body;return write(()=>db.doc('scores/'+ME).set(body))}
+const PXP={kolay:10,orta:20,zor:30};
+const PREV={orta:'kolay',zor:'orta'};
+const pkBest=(t,l)=>myScores()['pk-'+t+'-'+l];
+function pkUnlocked(t,l){if(l==='kolay'||amTeacher())return true;const p=PREV[l];return (pkBest(t,p)||0)>=4||(myScores()[t+'-'+p]||0)>=4}
+function renderLevelCard(){
+  const xp=myXp(),L=levelOf(xp),pct=L.to?Math.round((xp-L.from)/(L.to-L.from)*100):100;
+  $('#levelCard').innerHTML=`<div class="lvnum"><b>${L.n}</b><span>SEVİYE</span></div>
+    <div><div class="row" style="justify-content:space-between"><h3>${L.title}</h3><span class="mono small" style="color:var(--cyan)">${xp} XP</span></div></div>
+    <div style="display:grid;gap:6px"><div class="xpbar"><i style="width:${pct}%"></i></div>
+    <span class="small muted">${L.to?`Seviye ${L.n+1} (${LVL[L.n][1]}) için ${L.to-xp} XP daha. Pekiştirme sorularıyla ve testlerde rekor kırarak XP kazan.`:'En yüksek seviyedesin.'}</span></div>`;
+}
+
+function renderTopics(){
+  const sc=myScores();
+  $('#topicList').innerHTML=T.map(t=>`<article class="card topic">
+    <span class="code">${t.code} · 15 test + 18 pekiştirme sorusu</span>
+    <h3>${t.name}</h3><p class="small muted">${t.desc}</p>
+    <div class="pklabel" style="border:0;padding:0"><span>Test · 5 soru</span><span>en iyi</span></div>
+    <div class="levels">${Object.keys(LV).map(k=>{const b=sc[t.id+'-'+k];
+      return `<button class="lvbtn lv-${k}" data-t="${t.id}" data-l="${k}"><span class="t">${LV[k]}</span><span class="s">${b==null?'5 soru':'En iyi '+b+'/5'}</span></button>`}).join('')}</div>
+    <div class="pklabel"><span>Pekiştirme · açıklamalı</span><span>+XP</span></div>
+    <div class="levels">${Object.keys(LV).map(k=>{const b=pkBest(t.id,k),open=pkUnlocked(t.id,k);
+      return `<button class="lvbtn lv-${k}" data-pk="${t.id}" data-l="${k}" ${open?'':'disabled'} title="${open?'':esc(LV[PREV[k]]+' seviyesinde 4/6 yap ya da testten 4/5 al')}"><span class="t">${open?'':'⊘ '}${LV[k]}</span><span class="s">${!open?'Kilitli':b==null?'6 soru · +'+PXP[k]:'★ '+b+'/6'}</span></button>`}).join('')}</div>
+  </article>`).join('');
+}
+$('#topicList').addEventListener('click',e=>{const b=e.target.closest('.lvbtn');if(!b||b.disabled)return;
+  const t=T.find(x=>x.id===(b.dataset.t||b.dataset.pk)),k=b.dataset.l;
+  if(b.dataset.pk)return startPractice(t.id,k);
+  startQuiz(`${t.name} · ${LV[k]}`,t.L[k].map(toQ),{key:t.id+'-'+k,color:LVC[k]});
+});
+
+/* pekiştirme oturumu: yanlışlar sona eklenir, doğru yapılana kadar tekrar sorulur */
+let PQ=null;
+function startPractice(tid,lv){
+  clearInterval(tick);
+  const raw=PK[tid][lv];
+  PQ={t:T.find(x=>x.id===tid),lv,raw,queue:shuffle(raw.map((_,i)=>i)),missed:new Set(),mastered:0,firstOk:0,xp:0};
+  $('#play').hidden=false;document.body.style.overflow='hidden';showPQ();
+}
+function showPQ(){
+  const i=PQ.queue[0],r=PQ.raw[i],idx=shuffle([0,1,2,3]),q={q:r[0],o:idx.map(k=>r[1][k]),a:idx.indexOf(0),why:r[2]},n=PQ.raw.length;
+  const again=PQ.missed.has(i);
+  $('#stage').innerHTML=`<div class="phead"><div><div class="eyebrow">Pekiştirme · ${PQ.t.name} · ${LV[PQ.lv]}</div><span class="mono">${PQ.mastered}/${n} öğrenildi${again?' · tekrar soru':''}</span></div>
+    <div class="row"><span class="mono" style="color:var(--cyan)">+${PQ.xp} XP</span><button class="btn ghost sm" id="pquit">✕ Çık</button></div></div>
+    <div class="timer"><i style="width:${PQ.mastered/n*100}%;background:${LVC[PQ.lv]}"></i></div>
+    <div class="question">${esc(q.q)}</div>
+    <div class="answers">${q.o.map((o,j)=>`<button class="ans" data-k="${j}"><span class="k">${'ABCD'[j]}</span><span>${esc(o)}</span></button>`).join('')}</div>
+    <div id="pafter" style="display:grid;gap:12px"></div>`;
+  $('#pquit').onclick=closePlay;$('#stage .ans').focus();
+  document.querySelectorAll('#stage .ans').forEach(b=>b.onclick=()=>{
+    const k=+b.dataset.k,ok=k===q.a;
+    document.querySelectorAll('#stage .ans').forEach((x,j)=>{x.disabled=true;if(j===q.a)x.classList.add('ok');else if(j===k)x.classList.add('no')});
+    let gain=0;
+    if(ok){gain=again?5:PXP[PQ.lv];if(!again)PQ.firstOk++;PQ.xp+=gain;PQ.mastered++;PQ.queue.shift()}
+    else{PQ.missed.add(i);PQ.queue.push(PQ.queue.shift())}
+    const last=!PQ.queue.length;
+    $('#pafter').innerHTML=`<div class="why"><span class="lab" style="color:${ok?'var(--easy)':'var(--bad)'}">${ok?'Doğru · +'+gain+' XP':'Yanlış · bu soru sona eklendi'}</span>
+      ${ok?'':`<span><b>Doğru cevap:</b> ${esc(q.o[q.a])}</span>`}<span>${esc(q.why)}</span></div>
+      <div class="row" style="justify-content:flex-end"><button class="btn pri" id="pnx">${last?'Sonucu gör':'Devam →'}</button></div>`;
+    $('#pnx').focus();$('#pnx').onclick=()=>last?finishPractice():showPQ();
+  });
+}
+function finishPractice(){
+  const n=PQ.raw.length,key='pk-'+PQ.t.id+'-'+PQ.lv,sc={...myScores()},old=sc[key];
+  const wasOpen=PQ.lv!=='zor'&&pkUnlocked(PQ.t.id,{kolay:'orta',orta:'zor'}[PQ.lv]);
+  const before=levelOf(myXp()),xpNew=myXp()+PQ.xp;
+  if(old==null||PQ.firstOk>old)sc[key]=PQ.firstOk;
+  if(logged&&ACC())saveScores(sc,xpNew);
+  const after=levelOf(xpNew),nextLv={kolay:'orta',orta:'zor'}[PQ.lv];
+  const unlocked=nextLv&&!wasOpen&&PQ.firstOk>=4;
+  const msg=PQ.firstOk===n?'Hepsini ilk denemede bildin, konu pekişti!':PQ.firstOk>=4?'Güzel! Yanlış yaptıkların artık öğrenildi.':'Yanlış yaptığın soruları tekrar ettin. Bir tur daha çözmek konuyu oturtur.';
+  $('#stage').innerHTML=`<div class="result"><div class="eyebrow">Pekiştirme · ${PQ.t.name} · ${LV[PQ.lv]}</div>
+    <div class="big">${PQ.firstOk}/${n}</div><p class="mono small muted">ilk denemede doğru</p>
+    <p class="mono" style="color:var(--cyan);font-size:1.2rem">+${PQ.xp} XP</p>
+    ${after.n>before.n?`<span class="pill ok">Seviye atladın! Seviye ${after.n} · ${after.title}</span>`:''}
+    ${unlocked?`<span class="pill soon">${LV[nextLv]} seviyesi açıldı</span>`:''}
+    <p>${msg}</p>
+    <div class="row" style="justify-content:center"><button class="btn ${unlocked?'':'pri'}" id="pagain">Tekrar çöz</button>${nextLv&&(unlocked||wasOpen)?`<button class="btn pri" id="pnext">${LV[nextLv]} seviyesine geç</button>`:''}<button class="btn" id="pclose">Kapat</button></div></div>`;
+  const t=PQ.t.id,lv=PQ.lv;
+  $('#pagain').onclick=()=>startPractice(t,lv);$('#pclose').onclick=closePlay;
+  const nx=$('#pnext');if(nx)nx.onclick=()=>startPractice(t,nextLv);
+  (nx||$('#pagain')).focus();
+}
+
+/* oyun stüdyosu */
+const blankQ=()=>({q:'',o:['','','',''],a:0});
+let D={id:null,title:'',time:15,qs:[blankQ()]};
+const myGames=()=>(M.games[ME]||{}).list||[];
+const is3d=g=>g.type==='3d';
+function gameMeta(g){
+  if(is3d(g)){const s=g.grid.join('');return `${[...s].filter(c=>c==='c').length} çip · ${[...s].filter(c=>c==='g').length} soru kapısı · ${+g.limit?g.limit+' sn':'süresiz'}`}
+  return `${g.qs.length} soru · ${+g.time?g.time+' sn/soru':'süresiz'}`;
+}
+const typeBadge=g=>is3d(g)?'<span class="type d3">3D</span>':'<span class="type qz">YARIŞMA</span>';
+function gameCard(g,own){const rec=myScores()['oyun-'+g.id];
+  return `<article class="card" style="background:var(--bg);display:grid;gap:8px;align-content:start">
+    <div class="row">${typeBadge(g)}${own&&g.published?'<span class="pill pubpill">Yayında</span>':''}</div>
+    <h3>${esc(g.title)}</h3>
+    <span class="small mono muted">${gameMeta(g)}${own?'':' · @'+esc(uname(g.owner))}</span>
+    ${rec!=null?`<p class="small mono" style="color:var(--cyan)">Rekorum: ${rec} puan</p>`:''}
+    <div class="row"><button class="btn pri sm" data-play="${g.id}" data-owner="${own?ME:g.owner}">▶ Oyna</button>${own?`<button class="btn sm" data-edit="${g.id}">Düzenle</button><button class="btn sm ghost" data-pub="${g.id}">${g.published?'Yayından kaldır':'Yayınla'}</button><button class="btn del sm" data-del-game="${g.id}">Sil</button>`:''}</div>
+  </article>`}
+function playGame(g,o={}){if(!g)return;if(is3d(g))start3D(g,o);else startQuiz(g.title,g.qs,{time:+g.time,game:g.id,assign:o.assign})}
+
+/* galeri */
+const gFilter={app:'all',guest:'all'};
+function allPublished(){return Object.entries(M.games).flatMap(([owner,d])=>((d&&d.list)||[]).filter(g=>g.published).map(g=>({...g,owner})))}
+const likeKey=g=>g.owner+':'+g.id;
+const likeCount=k=>Object.values(M.likes).filter(d=>(d.ids||[]).includes(k)).length;
+const myLikes=()=>((M.likes[ME]||{}).ids)||[];
+function bestOf(g){let b=null;for(const[id,d]of Object.entries(M.scores)){const v=((d||{}).s||{})['oyun-'+g.id];if(v!=null&&(!b||v>b.v))b={id,v}}return b}
+function renderGallery(){
+  const guest=authMode==='guest',el=guest?$('#guestGallery'):$('#gallery'),f=gFilter[guest?'guest':'app'];
+  if(!el)return;
+  const canLike=!guest&&logged&&ACC();
+  const list=allPublished().filter(g=>f==='all'||(f==='3d'?is3d(g):!is3d(g)))
+    .map(g=>({g,n:likeCount(likeKey(g))})).sort((a,b)=>b.n-a.n||(b.g.publishedAt||0)-(a.g.publishedAt||0));
+  el.innerHTML=list.length?list.map(({g,n})=>{const b=bestOf(g),liked=canLike&&myLikes().includes(likeKey(g));
+    return `<article class="card gcard">
+      <div class="row">${typeBadge(g)}<span class="small muted mono">@${esc(uname(g.owner))}</span></div>
+      <h3>${esc(g.title)}</h3>
+      <span class="small mono muted">${gameMeta(g)}</span>
+      <p class="small mono" style="color:var(--cyan)">${b?`Rekor: @${esc(uname(b.id))} · ${b.v} puan`:'Henüz rekor yok, ilk sen ol'}</p>
+      <div class="row"><button class="btn pri sm" data-gplay="${g.id}" data-owner="${g.owner}">▶ Oyna</button>
+      <button class="like" ${canLike?`data-like="${esc(likeKey(g))}"`:'disabled'} aria-pressed="${liked}" aria-label="Beğen">♥ ${n}</button></div>
+    </article>`}).join('')
+    :`<p class="muted">${f==='all'?'Henüz yayınlanan oyun yok.':'Bu türde yayınlanan oyun yok.'}${guest?'':' Oyun Yap sekmesinde bir oyun tasarlayıp "Galeride yayınla"yı işaretle.'}</p>`;
+}
+document.querySelectorAll('.gfilter').forEach(box=>box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  gFilter[box.dataset.gf]=b.dataset.f;box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderGallery()}));
+['#gallery','#guestGallery'].forEach(sel=>$(sel).addEventListener('click',e=>{
+  const p=e.target.closest('[data-gplay]');if(p)playGame(findGame(p.dataset.gplay,p.dataset.owner));
+  const l=e.target.closest('[data-like]');
+  if(l){const k=l.dataset.like,cur=myLikes();write(()=>db.doc('likes/'+ME).set({ids:cur.includes(k)?cur.filter(x=>x!==k):[...cur,k]}))}
+}));
+
+function renderGames(){
+  const mine=myGames();
+  $('#gameList').innerHTML=mine.length?mine.map(g=>gameCard(g,true)).join(''):'<p class="muted">Henüz oyunun yok. Aşağıdan ilk oyununu tasarla.</p>';
+  const tIds=[...new Set(myClassIds().map(id=>(M.classes.find(c=>c.id===id)||{}).teacher).filter(Boolean))].filter(id=>id!==ME);
+  const tg=tIds.flatMap(id=>((M.games[id]||{}).list||[]).map(g=>({...g,owner:id})));
+  $('#teacherGamesCard').hidden=!(ACC().role==='ogrenci');
+  $('#teacherGames').innerHTML=tg.length?tg.map(g=>gameCard(g,false)).join(''):'<p class="muted small">Öğretmenlerin oyun paylaştığında burada görünecek.</p>';
+}
+function findGame(id,owner){return ((M.games[owner]||{}).list||[]).find(g=>g.id===id)}
+document.querySelector('#v-oyun').addEventListener('click',e=>{
+  const p=e.target.closest('[data-play]'),ed=e.target.closest('[data-edit]'),d=e.target.closest('[data-del-game]');
+  const pb=e.target.closest('[data-pub]');
+  if(p)playGame(findGame(p.dataset.play,p.dataset.owner));
+  if(ed){const g=findGame(ed.dataset.edit,ME);if(!g)return;
+    if(is3d(g)){E3=JSON.parse(JSON.stringify(g));setMode('3d');render3dEditor();$('#e3Title').scrollIntoView({behavior:'smooth'})}
+    else{D=JSON.parse(JSON.stringify(g));setMode('quiz');renderEditor();$('#edTitle').scrollIntoView({behavior:'smooth'})}}
+  if(pb){const id=pb.dataset.pub;const list=myGames().map(g=>g.id===id?{...g,published:!g.published,publishedAt:g.published?g.publishedAt:Date.now()}:g);
+    const now=list.find(g=>g.id===id).published;
+    write(()=>db.doc('games/'+ME).set({list}),now?'Oyun Galeri\'de yayınlandı':'Oyun yayından kaldırıldı')}
+  if(d)armDelete(d,()=>write(()=>db.doc('games/'+ME).set({list:myGames().filter(g=>g.id!==d.dataset.delGame)}),'Oyun silindi'));
+});
+function setMode(m){$('#ed3d').hidden=m!=='3d';$('#quizEd').hidden=m!=='quiz';document.querySelectorAll('#modeSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m))}
+$('#modeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setMode(b.dataset.mode)});
+function renderEditor(){
+  $('#edTitle').textContent=D.id?'Oyunu düzenle':'Yeni oyun';
+  $('#gTitle').value=D.title;$('#gTime').value=String(D.time);$('#gPub').checked=!!D.published;
+  $('#qEditor').innerHTML=D.qs.map((q,i)=>`<div class="qed">
+    <div class="qhead"><span class="mono small" style="color:var(--cyan)">SORU ${p2(i+1)}</span>${D.qs.length>1?`<button class="btn del sm" type="button" data-rm="${i}">Kaldır</button>`:''}</div>
+    <input id="q${i}" data-i="${i}" data-f="q" value="${esc(q.q)}" placeholder="Soruyu yaz" aria-label="Soru ${i+1}">
+    <div class="opts">${q.o.map((o,j)=>`<div class="opt">
+      <input type="radio" name="a${i}" id="a${i}_${j}" data-i="${i}" data-f="a" value="${j}" ${q.a===j?'checked':''} aria-label="Doğru cevap ${'ABCD'[j]}">
+      <input id="o${i}_${j}" data-i="${i}" data-f="o" data-j="${j}" value="${esc(o)}" placeholder="${'ABCD'[j]} seçeneği">
+    </div>`).join('')}</div>
+    <p class="hint">Doğru cevabın yanındaki daireyi işaretle.</p></div>`).join('');
+}
+$('#qEditor').addEventListener('input',e=>{const t=e.target,i=+t.dataset.i;if(isNaN(i))return;
+  if(t.dataset.f==='q')D.qs[i].q=t.value;if(t.dataset.f==='o')D.qs[i].o[+t.dataset.j]=t.value;if(t.dataset.f==='a')D.qs[i].a=+t.value});
+$('#qEditor').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(b){D.qs.splice(+b.dataset.rm,1);renderEditor()}});
+$('#gTitle').addEventListener('input',e=>D.title=e.target.value);
+$('#gTime').addEventListener('change',e=>D.time=+e.target.value);
+$('#addQ').onclick=()=>{if(D.qs.length>=20){toast('Bir oyunda en fazla 20 soru olabilir');return}D.qs.push(blankQ());renderEditor();$('#q'+(D.qs.length-1)).focus()};
+$('#edReset').onclick=()=>{D={id:null,title:'',time:15,qs:[blankQ()]};renderEditor();$('#gErr').hidden=true};
+$('#impBtn').onclick=()=>{const t=T.find(x=>x.id===$('#impTopic').value),k=$('#impLevel').value;
+  D.qs=D.qs.filter(q=>q.q.trim()||q.o.some(o=>o.trim()));D.qs.push(...t.L[k].map(toQ));D.qs=D.qs.slice(0,20);renderEditor();toast(`${t.name} · ${LV[k]} soruları eklendi`)};
+$('#saveGame').onclick=async()=>{
+  const err=$('#gErr');let m='';
+  if(!D.title.trim())m='Oyuna bir ad ver.';
+  else{const bad=D.qs.findIndex(q=>!q.q.trim()||q.o.some(o=>!o.trim()));if(bad>-1)m=`Soru ${bad+1}: soru metni ve dört seçeneğin hepsi dolu olmalı.`}
+  if(m){err.textContent=m;err.hidden=false;return}
+  err.hidden=true;
+  const pub=$('#gPub').checked;
+  const g={id:D.id||uid8(),type:'quiz',title:D.title.trim(),time:D.time,qs:D.qs,published:pub,publishedAt:pub?(D.publishedAt||Date.now()):null};
+  const list=D.id?myGames().map(x=>x.id===g.id?g:x):[g,...myGames()];
+  if(await write(()=>db.doc('games/'+ME).set({list}),'Oyun kaydedildi. "Oyna" ile başlat.')){D={id:null,title:'',time:15,qs:[blankQ()]};renderEditor()}
+};
+
+/* oynatıcı */
+let Q=null,tick=null;
+function startQuiz(title,qs,opt={}){
+  clearInterval(tick);
+  const prep=x=>{const idx=shuffle([0,1,2,3]);return{q:x.q,o:idx.map(i=>x.o[i]),a:idx.indexOf(x.a)}};
+  Q={title,src:qs,opt,time:opt.time||0,i:0,correct:0,points:0,log:[],qs:opt.key?qs.map(prep):shuffle(qs.map(prep))};
+  $('#play').hidden=false;document.body.style.overflow='hidden';showQ();
+}
+function showQ(){
+  const q=Q.qs[Q.i],n=Q.qs.length;
+  $('#stage').innerHTML=`<div class="phead"><div><div class="eyebrow">${esc(Q.title)}</div><span class="mono">SORU ${Q.i+1}/${n}</span></div>
+    <div class="row"><span class="mono" style="color:var(--cyan)">${Q.points} puan</span><button class="btn ghost sm" id="quit">✕ Çık</button></div></div>
+    ${Q.time?'<div class="timer"><i id="tb" style="width:100%"></i></div>':`<div class="timer"><i style="width:${Q.i/n*100}%;background:${Q.opt.color||'var(--cyan)'}"></i></div>`}
+    <div class="question">${esc(q.q)}</div>
+    <div class="answers">${q.o.map((o,j)=>`<button class="ans" data-k="${j}"><span class="k">${'ABCD'[j]}</span><span>${esc(o)}</span></button>`).join('')}</div>
+    <div class="row" id="after" style="justify-content:flex-end;min-height:40px"></div>`;
+  $('#quit').onclick=closePlay;$('#stage .ans').focus();
+  document.querySelectorAll('.ans').forEach(b=>b.onclick=()=>answer(+b.dataset.k));
+  if(Q.time){const st=performance.now();Q.left=Q.time;tick=setInterval(()=>{const left=Q.time-(performance.now()-st)/1000;Q.left=left;
+    const tb=$('#tb');if(tb){tb.style.width=Math.max(0,left/Q.time*100)+'%';tb.style.background=left<Q.time*.3?'var(--bad)':'var(--cyan)'}
+    if(left<=0)answer(-1)},100)}
+}
+function answer(k){
+  clearInterval(tick);const q=Q.qs[Q.i],ok=k===q.a;
+  if(ok){Q.correct++;Q.points+=100+(Q.time?Math.round(100*Math.max(0,Q.left)/Q.time):0)}
+  Q.log.push({q:q.q,ok,right:q.o[q.a],given:k>=0?q.o[k]:'Süre doldu'});
+  document.querySelectorAll('.ans').forEach((b,j)=>{b.disabled=true;if(j===q.a)b.classList.add('ok');else if(j===k)b.classList.add('no')});
+  const last=Q.i===Q.qs.length-1;
+  $('#after').innerHTML=`<span class="small" style="margin-right:auto;color:${ok?'var(--easy)':'var(--bad)'}">${ok?'Doğru!':k<0?'Süre doldu.':'Yanlış.'}</span><button class="btn pri" id="nx">${last?'Sonucu gör':'Sonraki soru →'}</button>`;
+  $('#nx').focus();$('#nx').onclick=()=>{if(last)finish();else{Q.i++;showQ()}};
+}
+function finish(){
+  const n=Q.qs.length,c=Q.correct,sc={...myScores()};let rec=false,changed=false,xpGain=0;
+  if(Q.opt.key){const p=sc[Q.opt.key];if(p==null||c>p){sc[Q.opt.key]=c;rec=p!=null;changed=true;xpGain=(c-(p||0))*10}}
+  if(Q.opt.game){const k='oyun-'+Q.opt.game,p=sc[k];if(p==null||Q.points>p){sc[k]=Q.points;rec=p!=null;changed=true}}
+  if(Q.opt.assign&&logged&&ACC())submitHw(Q.opt.assign,{score:Q.opt.game?Q.points:c,total:Q.opt.game?null:n});
+  if(changed&&logged&&ACC())saveScores(sc,myXp()+xpGain);
+  else rec=false;
+  const msg=c===n?'Kusursuz! Tüm soruları bildin.':c>=n*.6?'İyi iş! Birkaç konuyu tekrar etmek yeterli.':'Konuyu tekrar gözden geçirip yeniden dene.';
+  const wrong=Q.log.filter(x=>!x.ok);
+  $('#stage').innerHTML=`<div class="result"><div class="eyebrow">${esc(Q.title)}</div>
+    <div class="big">${c}/${n}</div>${Q.opt.game?`<p class="mono" style="color:var(--cyan)">${Q.points} puan</p>`:''}
+    ${rec?'<span class="pill soon">Yeni rekor</span>':''}<p>${msg}</p>
+    ${wrong.length?`<div class="review"><p class="small muted mono">YANLIŞ CEVAPLAR</p>${wrong.map(w=>`<div><strong>${esc(w.q)}</strong><br><span style="color:var(--bad)">Senin cevabın: ${esc(w.given)}</span><br><span style="color:var(--easy)">Doğru cevap: ${esc(w.right)}</span></div>`).join('')}</div>`:''}
+    <div class="row" style="justify-content:center"><button class="btn pri" id="again">Tekrar oyna</button><button class="btn" id="closeR">Kapat</button></div></div>`;
+  $('#again').onclick=()=>startQuiz(Q.title,Q.src,Q.opt);$('#closeR').onclick=closePlay;$('#again').focus();
+}
+function closePlay(){clearInterval(tick);$('#play').hidden=true;document.body.style.overflow='';if(logged)renderAll();else if(authMode==='guest')renderGallery()}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#play').hidden)closePlay()});
+
+/* ---------- 3D editör ---------- */
+const TEMPLATE=["############","#S..c#...c.#","#.##.#.##..#","#..#...#t..#","##.#g###.#.#","#c.#...c.#.#","#.####.###.#","#...t#....c#","#.#..g.##..#","#.#.##.#c#.#","#c..#....gF#","############"];
+const EMPTY=()=>Array.from({length:12},(_,z)=>z===0||z===11?'############':'#'+'.'.repeat(10)+'#').map((r,z)=>z===1?'#S'+r.slice(2):z===10?r.slice(0,10)+'F#':r);
+const TOOLS=[['#','Duvar','wall',''],['.','Zemin','dot',''],['c','Çip','chip','◆'],['g','Soru kapısı','gate','?'],['t','Lazer tuzak','trap','×'],['S','Başlangıç','start','▶'],['F','Bitiş','fin','◎']];
+const TCLS=Object.fromEntries(TOOLS.map(t=>[t[0],t]));
+const blank3=()=>({id:null,type:'3d',title:'',theme:'neon',limit:90,qset:{topic:'donanim',level:'kolay'},grid:[...TEMPLATE],published:false});
+let E3=blank3(),tool='#',painting=false;
+function render3dEditor(){
+  if(!$('#e3Topic').options.length)$('#e3Topic').innerHTML=T.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  $('#e3Title').textContent=E3.id?'3D oyunu düzenle':'Yeni 3D oyun';$('#e3New').hidden=!E3.id;
+  $('#e3Name').value=E3.title;$('#e3Theme').value=E3.theme;$('#e3Limit').value=String(E3.limit);
+  $('#e3Topic').value=E3.qset.topic;$('#e3Level').value=E3.qset.level;$('#e3Pub').checked=!!E3.published;
+  $('#pal').innerHTML=TOOLS.map(([k,n,c,s])=>`<button type="button" data-tool="${esc(k)}" aria-pressed="${tool===k}"><span class="sw t-${c}">${s}</span>${n}</button>`).join('');
+  drawGrid();
+}
+function drawGrid(){
+  $('#g3').innerHTML=E3.grid.map((r,z)=>[...r].map((ch,x)=>{const t=TCLS[ch]||TCLS['.'];return `<div class="t-${t[2]}" data-x="${x}" data-z="${z}">${t[3]}</div>`}).join('')).join('');
+  const s=E3.grid.join('');
+  $('#e3Stats').textContent=`${[...s].filter(c=>c==='c').length} çip · ${[...s].filter(c=>c==='g').length} soru kapısı · ${[...s].filter(c=>c==='t').length} tuzak`;
+}
+function paintAt(el){
+  if(!el||el.dataset.x==null)return;const x=+el.dataset.x,z=+el.dataset.z;
+  if(E3.grid[z][x]===tool)return;
+  if(tool==='S'||tool==='F')E3.grid=E3.grid.map(r=>r.replaceAll(tool,'.'));
+  const r=E3.grid[z];E3.grid[z]=r.slice(0,x)+tool+r.slice(x+1);
+  const t=TCLS[tool];
+  if(tool==='S'||tool==='F')drawGrid();else{el.className='t-'+t[2];el.textContent=t[3];const s=E3.grid.join('');$('#e3Stats').textContent=`${[...s].filter(c=>c==='c').length} çip · ${[...s].filter(c=>c==='g').length} soru kapısı · ${[...s].filter(c=>c==='t').length} tuzak`}
+}
+$('#pal').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(!b)return;tool=b.dataset.tool;$('#pal').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+$('#g3').addEventListener('pointerdown',e=>{painting=true;try{$('#g3').setPointerCapture(e.pointerId)}catch(_){}paintAt(e.target.closest('[data-x]'));e.preventDefault()});
+$('#g3').addEventListener('pointermove',e=>{if(painting)paintAt(document.elementFromPoint(e.clientX,e.clientY)?.closest?.('[data-x]'))});
+['pointerup','pointercancel'].forEach(t=>$('#g3').addEventListener(t,()=>painting=false));
+$('#e3Name').addEventListener('input',e=>E3.title=e.target.value);
+$('#e3Theme').addEventListener('change',e=>E3.theme=e.target.value);
+$('#e3Limit').addEventListener('change',e=>E3.limit=+e.target.value);
+$('#e3Topic').addEventListener('change',e=>E3.qset.topic=e.target.value);
+$('#e3Level').addEventListener('change',e=>E3.qset.level=e.target.value);
+$('#e3Template').onclick=()=>{E3.grid=[...TEMPLATE];drawGrid()};
+$('#e3Clear').onclick=()=>{E3.grid=EMPTY();drawGrid()};
+$('#e3New').onclick=()=>{E3=blank3();render3dEditor();$('#e3Err').hidden=true};
+function check3d(g){
+  const s=g.grid.join('');
+  if([...s].filter(c=>c==='S').length!==1)return 'Haritada bir Başlangıç noktası olmalı.';
+  if([...s].filter(c=>c==='F').length!==1)return 'Haritada bir Bitiş noktası olmalı.';
+  let st,fi;g.grid.forEach((r,z)=>[...r].forEach((c,x)=>{if(c==='S')st=[x,z];if(c==='F')fi=[x,z]}));
+  const seen=new Set([st+'']),q=[st];
+  while(q.length){const[x,z]=q.shift();for(const[dx,dz]of[[1,0],[-1,0],[0,1],[0,-1]]){const n=[x+dx,z+dz],c=(g.grid[n[1]]||'')[n[0]];if(!c||c==='#'||c==='t'||seen.has(n+''))continue;seen.add(n+'');q.push(n)}}
+  if(!seen.has(fi+''))return 'Başlangıçtan Bitiş\'e giden bir yol yok. Duvar veya tuzakların bir kısmını kaldır.';
+  return '';
+}
+$('#e3Test').onclick=()=>{const m=check3d(E3);if(m){$('#e3Err').textContent=m;$('#e3Err').hidden=false;return}$('#e3Err').hidden=true;start3D({...E3,title:(E3.title||'İsimsiz oyun')+' · test',id:null})};
+$('#e3Save').onclick=async()=>{
+  const err=$('#e3Err');let m=E3.title.trim()?check3d(E3):'Oyuna bir ad ver.';
+  if(m){err.textContent=m;err.hidden=false;return}
+  err.hidden=true;
+  const pub=$('#e3Pub').checked;
+  const g={...JSON.parse(JSON.stringify(E3)),id:E3.id||uid8(),type:'3d',title:E3.title.trim(),published:pub,publishedAt:pub?(E3.publishedAt||Date.now()):null};
+  const list=E3.id?myGames().map(x=>x.id===g.id?g:x):[g,...myGames()];
+  if(await write(()=>db.doc('games/'+ME).set({list}),pub?'3D oyun kaydedildi ve Galeri\'de yayınlandı':'3D oyun kaydedildi')){E3=g;render3dEditor()}
+};
+
+/* ---------- 3D oynatıcı ---------- */
+const THEMES={
+  neon:{bg:0x060c18,floor:0x0c1a2c,wall:0x17324f,edge:0x3fdcf2,chip:0xfbbf24,fin:0xf472b6},
+  devre:{bg:0x03110a,floor:0x0a2216,wall:0x11402a,edge:0x4ade80,chip:0xfbbf24,fin:0x3fdcf2},
+  uzay:{bg:0x0a0517,floor:0x150e2c,wall:0x2b1d57,edge:0xf472b6,chip:0x3fdcf2,fin:0xfbbf24}
+};
+let P3=null;
+function start3D(g,o={}){
+  if(!window.THREE){toast('3D motoru yüklenemedi. Sayfayı yenileyip tekrar dene.');return}
+  if(P3)stop3D();
+  const th=THEMES[g.theme]||THEMES.neon,N=12,grid=g.grid.map(r=>[...r]);
+  const wrap=$('#scene3d');
+  $('#play3d').hidden=false;document.body.style.overflow='hidden';$('#over3').hidden=true;$('#msg3').hidden=true;
+  let renderer;
+  try{renderer=new THREE.WebGLRenderer({antialias:true})}catch(e){$('#play3d').hidden=true;document.body.style.overflow='';toast('Bu cihaz 3D grafik (WebGL) desteklemiyor.');return}
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+  wrap.prepend(renderer.domElement);
+  const scene=new THREE.Scene();scene.background=new THREE.Color(th.bg);scene.fog=new THREE.Fog(th.bg,9,24);
+  const cam=new THREE.PerspectiveCamera(55,1,.1,100);
+  scene.add(new THREE.HemisphereLight(0xcfe6ff,0x080816,.8));
+  const dl=new THREE.DirectionalLight(0xffffff,.55);dl.position.set(4,10,6);scene.add(dl);
+
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(N,N),new THREE.MeshStandardMaterial({color:th.floor,roughness:.95}));
+  floor.rotation.x=-Math.PI/2;floor.position.set(N/2-.5,0,N/2-.5);scene.add(floor);
+  const gh=new THREE.GridHelper(N,N,th.edge,th.edge);gh.position.set(N/2-.5,.005,N/2-.5);gh.material.transparent=true;gh.material.opacity=.16;scene.add(gh);
+
+  const wallG=new THREE.BoxGeometry(1,1.1,1),wallM=new THREE.MeshStandardMaterial({color:th.wall,roughness:.6,metalness:.2});
+  const edgeG=new THREE.EdgesGeometry(wallG),edgeM=new THREE.LineBasicMaterial({color:th.edge,transparent:true,opacity:.75});
+  const chipG=new THREE.OctahedronGeometry(.2),chipM=new THREE.MeshStandardMaterial({color:th.chip,emissive:th.chip,emissiveIntensity:.7});
+  const gateG=new THREE.BoxGeometry(.9,1,.9),gateEdge=new THREE.EdgesGeometry(gateG);
+  const trapG=new THREE.PlaneGeometry(.9,.9);
+  const chips=new Map(),gates=new Map(),traps=[];let start={x:1,z:1},totalChips=0;
+  grid.forEach((row,z)=>row.forEach((c,x)=>{
+    if(c==='#'){const m=new THREE.Mesh(wallG,wallM);m.position.set(x,.55,z);scene.add(m);const l=new THREE.LineSegments(edgeG,edgeM);l.position.copy(m.position);scene.add(l)}
+    else if(c==='c'){const m=new THREE.Mesh(chipG,chipM);m.position.set(x,.45,z);scene.add(m);chips.set(x+','+z,m);totalChips++}
+    else if(c==='g'){const grp=new THREE.Group();
+      const m=new THREE.Mesh(gateG,new THREE.MeshStandardMaterial({color:0x3fdcf2,emissive:0x0f5866,transparent:true,opacity:.35}));
+      const l=new THREE.LineSegments(gateEdge,new THREE.LineBasicMaterial({color:0x3fdcf2}));grp.add(m,l);grp.position.set(x,.5,z);scene.add(grp);gates.set(x+','+z,grp)}
+    else if(c==='t'){const m=new THREE.Mesh(trapG,new THREE.MeshBasicMaterial({color:0xfb7185,transparent:true,opacity:.5}));m.rotation.x=-Math.PI/2;m.position.set(x,.012,z);scene.add(m);traps.push(m)}
+    else if(c==='F'){const ring=new THREE.Mesh(new THREE.TorusGeometry(.35,.05,8,32),new THREE.MeshStandardMaterial({color:th.fin,emissive:th.fin,emissiveIntensity:.8}));
+      ring.rotation.x=-Math.PI/2;ring.position.set(x,.06,z);scene.add(ring);
+      const beam=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,3,24,1,true),new THREE.MeshBasicMaterial({color:th.fin,transparent:true,opacity:.18,side:THREE.DoubleSide}));
+      beam.position.set(x,1.5,z);scene.add(beam)}
+    else if(c==='S')start={x,z};
+  }));
+  // robot
+  const bot=new THREE.Group();
+  const bodyM=new THREE.MeshStandardMaterial({color:0xe3edf9,roughness:.4,metalness:.3});
+  const body=new THREE.Mesh(new THREE.BoxGeometry(.46,.4,.46),bodyM);body.position.y=.3;
+  const head=new THREE.Mesh(new THREE.BoxGeometry(.34,.24,.34),bodyM);head.position.y=.65;
+  const eye=new THREE.Mesh(new THREE.BoxGeometry(.24,.06,.02),new THREE.MeshBasicMaterial({color:th.edge}));eye.position.set(0,.67,.18);
+  const ant=new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),new THREE.MeshBasicMaterial({color:th.chip}));ant.position.y=.86;
+  bot.add(body,head,eye,ant);scene.add(bot);
+  const glow=new THREE.PointLight(th.edge,.8,3);glow.position.y=.8;bot.add(glow);
+
+  const S={g,grid,pos:{...start},from:null,to:null,t:0,face:Math.PI,dir:null,paused:false,over:false,
+    chips:0,totalChips,gatesOpen:0,score:0,lives:3,elapsed:0,limit:+g.limit||0,shake:0,flash:0};
+  bot.position.set(start.x,0,start.z);bot.rotation.y=S.face;
+  cam.position.set(start.x,7.5,start.z+6.5);cam.lookAt(start.x,0,start.z-1);
+
+  function fit(){const w=wrap.clientWidth||1,h=wrap.clientHeight||1;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
+  const ro=new ResizeObserver(fit);ro.observe(wrap);fit();
+
+  function msg(t){const m=$('#msg3');m.textContent=t;m.hidden=false;clearTimeout(msg.h);msg.h=setTimeout(()=>m.hidden=true,1800)}
+  function hud(){
+    const tl=S.limit?Math.max(0,Math.ceil(S.limit-S.elapsed)):null;
+    $('#hud').innerHTML=`<span class="ttl">${esc(g.title)}</span><span>Çip <b>${S.chips}/${S.totalChips}</b></span><span class="hearts" aria-label="${S.lives} can">${'♥'.repeat(S.lives)}<span style="opacity:.25">${'♥'.repeat(3-S.lives)}</span></span>${tl!=null?`<span>Süre <b style="${tl<=10?'color:var(--bad)':''}">${tl}</b></span>`:''}<span>Puan <b>${S.score}</b></span><button class="btn ghost sm" id="q3">✕ Çık</button>`;
+    $('#q3').onclick=stop3D;
+  }
+  hud();msg('Ok tuşları veya WASD ile hareket et. Bitiş halkasına ulaş!');
+
+  function cell(x,z){return (S.grid[z]||[])[x]}
+  function tryMove(dx,dz){
+    const nx=S.pos.x+dx,nz=S.pos.z+dz,c=cell(nx,nz);
+    S.face=Math.atan2(dx,dz);
+    if(!c||c==='#'){S.shake=.15;return}
+    if(c==='g'&&gates.has(nx+','+nz)){askGate(nx,nz);return}
+    S.from={...S.pos};S.to={x:nx,z:nz};S.t=0;
+  }
+  function arrive(){
+    const k=S.pos.x+','+S.pos.z,c=cell(S.pos.x,S.pos.z);
+    if(chips.has(k)){scene.remove(chips.get(k));chips.delete(k);S.chips++;S.score+=100;msg('+100 çip toplandı')}
+    if(c==='t'){S.lives--;S.flash=1;S.dir=null;
+      if(S.lives<=0)return end(false,'Canın bitti');
+      S.pos={...start};bot.position.set(start.x,0,start.z);msg('Lazer tuzağı! Başa döndün, 1 can gitti')}
+    if(c==='F')return end(true);
+    hud();
+  }
+  function askGate(x,z){
+    S.paused=true;S.dir=null;
+    const set=(T.find(t=>t.id===g.qset?.topic)||T[0]).L[g.qset?.level||'kolay'];
+    const raw=set[Math.floor(Math.random()*set.length)],idx=shuffle([0,1,2,3]),q={q:raw[0],o:idx.map(i=>raw[1][i]),a:idx.indexOf(0)};
+    $('#over3box').innerHTML=`<div class="eyebrow">// soru kapısı</div><div class="question" style="font-size:1.3rem">${esc(q.q)}</div>
+      <div class="answers">${q.o.map((o,j)=>`<button class="ans" data-k="${j}"><span class="k">${'ABCD'[j]}</span><span>${esc(o)}</span></button>`).join('')}</div>`;
+    $('#over3').hidden=false;$('#over3box .ans').focus();
+    $('#over3box').querySelectorAll('.ans').forEach(b=>b.onclick=()=>{
+      const k=+b.dataset.k,ok=k===q.a;
+      $('#over3box').querySelectorAll('.ans').forEach((x,j)=>{x.disabled=true;if(j===q.a)x.classList.add('ok');else if(j===k)x.classList.add('no')});
+      setTimeout(()=>{
+        $('#over3').hidden=true;S.paused=false;
+        if(ok){const gr=gates.get(x+','+z);scene.remove(gr);gates.delete(x+','+z);S.gatesOpen++;S.score+=50;msg('Doğru! Kapı açıldı +50')}
+        else{S.score=Math.max(0,S.score-20);msg('Yanlış! Kapı kapalı kaldı −20')}
+        hud();
+      },ok?600:1100);
+    });
+  }
+  function end(win,why){
+    S.over=true;S.paused=true;S.dir=null;
+    const tl=S.limit?Math.max(0,Math.ceil(S.limit-S.elapsed)):0;
+    let bonus=0;if(win)bonus=tl*5+S.lives*50+(S.chips===S.totalChips?200:0);
+    S.score+=bonus;hud();
+    let rec=false;
+    if(g.id&&logged&&ACC()){const sc={...myScores()},k='oyun-'+g.id,p=sc[k];
+      if(p==null||S.score>p){sc[k]=S.score;rec=p!=null;saveScores(sc)}}
+    if(o.assign&&logged&&ACC())submitHw(o.assign,{score:S.score,total:null});
+    $('#over3box').innerHTML=`<div class="result"><div class="eyebrow">${esc(g.title)}</div>
+      <h2 style="font-size:2rem;color:${win?'var(--easy)':'var(--bad)'}">${win?'Bitiş!':esc(why)}</h2>
+      <div class="big">${S.score}</div><p class="mono small muted">puan</p>${rec?'<span class="pill soon">Yeni rekor</span>':''}
+      <div class="review"><div class="mono small">Çip: ${S.chips}/${S.totalChips} · Açılan kapı: ${S.gatesOpen} · Kalan can: ${S.lives}${win?` · Bonus: +${bonus}`:''}</div></div>
+      ${!g.id?'<p class="small muted">Test oyunu: skor kaydedilmez.</p>':(!logged?'<p class="small muted">Skorunun kaydedilmesi için giriş yap.</p>':'')}
+      <div class="row" style="justify-content:center"><button class="btn pri" id="r3">Tekrar oyna</button><button class="btn" id="c3">Kapat</button></div></div>`;
+    $('#over3').hidden=false;$('#r3').onclick=()=>start3D(g,o);$('#c3').onclick=stop3D;$('#r3').focus();
+  }
+
+  const KEYS={ArrowUp:[0,-1],KeyW:[0,-1],ArrowDown:[0,1],KeyS:[0,1],ArrowLeft:[-1,0],KeyA:[-1,0],ArrowRight:[1,0],KeyD:[1,0]};
+  const kd=e=>{if(e.key==='Escape'){stop3D();return}const d=KEYS[e.code];if(d&&$('#over3').hidden){S.dir=d;e.preventDefault()}};
+  const ku=e=>{const d=KEYS[e.code];if(d&&S.dir===d)S.dir=null};
+  window.addEventListener('keydown',kd);window.addEventListener('keyup',ku);
+  const dp=$('#dpad');
+  const pd=e=>{const b=e.target.closest('[data-d]');if(!b)return;e.preventDefault();S.dir=b.dataset.d.split(',').map(Number)};
+  const pu=()=>{S.dir=null};
+  dp.addEventListener('pointerdown',pd);window.addEventListener('pointerup',pu);window.addEventListener('pointercancel',pu);
+
+  let last=performance.now(),raf;
+  const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function loop(now){
+    raf=requestAnimationFrame(loop);
+    const dt=Math.min(.05,(now-last)/1000);last=now;
+    if(!S.paused&&!S.over){
+      if(S.limit){S.elapsed+=dt;if(S.elapsed>=S.limit){end(false,'Süre doldu')}else if(Math.floor(S.elapsed-dt)!==Math.floor(S.elapsed))hud()}
+      if(S.to){S.t+=dt/.16;const k=Math.min(1,S.t);
+        bot.position.x=S.from.x+(S.to.x-S.from.x)*k;bot.position.z=S.from.z+(S.to.z-S.from.z)*k;
+        if(k>=1){S.pos={...S.to};S.to=null;arrive()}}
+      else if(S.dir)tryMove(S.dir[0],S.dir[1]);
+    }
+    // yüz yönü
+    let da=S.face-bot.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));bot.rotation.y+=da*Math.min(1,dt*14);
+    body.position.y=.3+(reduce?0:Math.sin(now/180)*.015);
+    if(S.shake>0){S.shake-=dt;bot.position.x+=(Math.random()-.5)*.04}
+    if(!reduce)chips.forEach(m=>{m.rotation.y+=dt*2;m.position.y=.45+Math.sin(now/300+m.position.x)*.06});
+    traps.forEach(m=>m.material.opacity=.35+.25*Math.abs(Math.sin(now/250)));
+    if(S.flash>0){S.flash-=dt*2;scene.background.setHex(S.flash>0?0x3a0a14:th.bg)}
+    const tx=bot.position.x,tz=bot.position.z;
+    cam.position.x+=(tx-cam.position.x)*Math.min(1,dt*5);cam.position.z+=(tz+6.5-cam.position.z)*Math.min(1,dt*5);
+    cam.lookAt(cam.position.x,0,cam.position.z-7.5);
+    renderer.render(scene,cam);
+  }
+  raf=requestAnimationFrame(loop);
+  P3={stop(){cancelAnimationFrame(raf);ro.disconnect();window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);
+    dp.removeEventListener('pointerdown',pd);window.removeEventListener('pointerup',pu);window.removeEventListener('pointercancel',pu);
+    scene.traverse(o=>{o.geometry&&o.geometry.dispose();if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose())});
+    renderer.dispose();renderer.domElement.remove()}};
+}
+function stop3D(){if(P3){P3.stop();P3=null}$('#play3d').hidden=true;$('#over3').hidden=true;document.body.style.overflow='';if(logged)renderAll();else if(authMode==='guest')renderGallery()}
+
+function fillSelects(){
+  const topics=T.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  if(!$('#lTopic').options.length)$('#lTopic').innerHTML=topics;
+  if(!$('#impTopic').options.length)$('#impTopic').innerHTML=topics;
+  const lc=$('#lClass').value,mine=M.classes.filter(c=>c.teacher===ME);
+  $('#lClass').innerHTML=mine.length?mine.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''):'<option value="">Önce sınıf oluştur</option>';
+  if(lc&&mine.some(c=>c.id===lc))$('#lClass').value=lc;
+  const hc=$('#hwClass').value;$('#hwClass').innerHTML=$('#lClass').innerHTML;if(hc&&mine.some(c=>c.id===hc))$('#hwClass').value=hc;
+  if(!$('#hwTopic').options.length)$('#hwTopic').innerHTML=topics;
+  const hg=$('#hwGame').value,gl=myGames();
+  $('#hwGame').innerHTML=gl.length?gl.map(g=>`<option value="${g.id}">${is3d(g)?'[3D] ':'[Yarışma] '}${esc(g.title)}</option>`).join(''):'<option value="">Önce bir oyun kaydet</option>';
+  if(hg&&gl.some(g=>g.id===hg))$('#hwGame').value=hg;
+  if(!$('#hwDue').value){const d=new Date();d.setDate(d.getDate()+7);$('#hwDue').value=ymd(d)}
+}
+function renderAll(){if(!logged||!ACC())return;renderWho();fillSelects();renderPanel();renderLevelCard();renderLessons();renderClasses();renderTopics();renderHw();renderGames();renderGallery()}
+$('#lDate').value=ymd(new Date());
+
+/* =====================================================================
+   AYARLAR — GitHub Pages sürümü
+   1) Firebase konsolunda Proje ayarları → Genel → Web uygulaman →
+      "firebaseConfig" nesnesini kopyala ve aşağıdaki null yerine yapıştır.
+   2) ADMIN_USERNAME: site yöneticisinin kullanıcı adı. Siteyi yayınlar
+      yayınlamaz bu kullanıcı adıyla ÖĞRETMEN olarak kayıt ol.
+      (firestore.rules dosyasındaki ad ile aynı olmalı.)
+   Firebase ayarı girilmezse site "yerel mod"da çalışır: veriler sadece
+   o tarayıcıda saklanır.
+   ===================================================================== */
+const FIREBASE_CONFIG=null;
+const ADMIN_USERNAME='yonetici';
+
+let BACK=null;
+function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('Yüklenemedi: '+src));document.head.appendChild(s)})}
+
+/* Firestore'u uygulamanın kullandığı basit belge arayüzüne çevirir */
+function fsAdapter(fs){
+  const snap=d=>({id:d.id,exists:d.exists,data:()=>d.exists?d.data():undefined});
+  const err=e=>{throw{code:e&&e.code==='permission-denied'?'invalid_argument':'unavailable',message:e&&e.message}};
+  return{
+    doc(path){const r=fs.doc(path);return{
+      get:()=>r.get().then(snap,err),
+      set:o=>r.set(o).catch(err),
+      update:o=>r.update(o).catch(err),
+      delete:()=>r.delete().catch(err),
+      onSnapshot:(fn,e)=>r.onSnapshot(d=>fn(snap(d)),x=>e&&e(x))}},
+    collection(path){const c=fs.collection(path);return{
+      onSnapshot:(fn,e)=>c.onSnapshot(q=>fn({docs:q.docs.map(snap)}),x=>e&&e(x))}}
+  };
+}
+
+/* Yerel mod: tarayıcı depolamasında aynı arayüz */
+function localAdapter(){
+  const KEY='bt.localdb';let D={};
+  const load=()=>{try{D=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){D={}}};load();
+  const L=new Set();
+  const fire=()=>L.forEach(f=>f());
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}fire()};
+  window.addEventListener('storage',e=>{if(e.key===KEY){load();fire()}});
+  const parent=p=>p.slice(0,p.lastIndexOf('/'));
+  const clone=o=>JSON.parse(JSON.stringify(o));
+  return{
+    doc(path){const s=()=>({id:path.split('/').pop(),exists:path in D,data:()=>D[path]});return{
+      get:async()=>s(),
+      set:async o=>{D[path]=clone(o);save()},
+      update:async o=>{if(!(path in D))throw{code:'invalid_argument'};D[path]={...D[path],...clone(o)};save()},
+      delete:async()=>{delete D[path];save()},
+      onSnapshot(fn){const f=()=>fn(s());L.add(f);setTimeout(f);return()=>L.delete(f)}}},
+    collection(path){return{
+      onSnapshot(fn){const f=()=>fn({docs:Object.keys(D).filter(k=>parent(k)===path).map(k=>({id:k.split('/').pop(),exists:true,data:()=>D[k]}))});L.add(f);setTimeout(f);return()=>L.delete(f)}}}
+  };
+}
+
+async function initFirebase(){
+  const B='https://www.gstatic.com/firebasejs/10.12.2/';
+  await loadScript(B+'firebase-app-compat.js');
+  await Promise.all([loadScript(B+'firebase-auth-compat.js'),loadScript(B+'firebase-firestore-compat.js')]);
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const auth=firebase.auth(),fs=firebase.firestore();
+  const first=new Promise(r=>{const un=auth.onAuthStateChanged(u=>{un();r(u)})});
+  const email=n=>n+'@bigtekno.app';
+  const authErr=e=>{const c=(e&&e.code)||'';
+    return new Error(c==='auth/email-already-in-use'?'Bu kullanıcı adı alınmış, başka bir tane dene.'
+      :['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-login-credentials'].includes(c)?'Kullanıcı adı veya şifre yanlış.'
+      :c==='auth/too-many-requests'?'Çok fazla deneme yapıldı. Birkaç dakika sonra tekrar dene.'
+      :c==='auth/operation-not-allowed'?'Firebase\'de E-posta/Şifre girişi açık değil (Authentication → Sign-in method).'
+      :c==='auth/network-request-failed'?'İnternet bağlantısı yok.'
+      :c==='auth/weak-password'?'Şifre en az 6 karakter olmalı.'
+      :'İşlem yapılamadı ('+c+').')};
+  return{mode:'firebase',db:fsAdapter(fs),
+    async currentUid(){const u=await first;return u?u.uid:null},
+    async register(n,pw){try{return (await auth.createUserWithEmailAndPassword(email(n),pw)).user.uid}catch(e){throw authErr(e)}},
+    async login(n,pw){try{return (await auth.signInWithEmailAndPassword(email(n),pw)).user.uid}catch(e){throw authErr(e)}},
+    async logout(){await auth.signOut()}};
+}
+
+function initLocal(){
+  const UK='bt.localusers';
+  const users=()=>{try{return JSON.parse(localStorage.getItem(UK))||{}}catch(e){return{}}};
+  return{mode:'local',db:localAdapter(),
+    async currentUid(){return sess.get()},
+    async register(n,pw){const u=users();if(u[n])throw new Error('Bu kullanıcı adı alınmış, başka bir tane dene.');
+      const uid='u'+uid8(),salt=randSalt();u[n]={uid,salt,hash:await pwHash(pw,salt)};
+      try{localStorage.setItem(UK,JSON.stringify(u))}catch(e){throw new Error('Tarayıcı depolaması kapalı, kayıt yapılamadı.')}
+      sess.set(uid);return uid},
+    async login(n,pw){const r=users()[n];if(!r||await pwHash(pw,r.salt)!==r.hash)throw new Error('Kullanıcı adı veya şifre yanlış.');sess.set(r.uid);return r.uid},
+    async logout(){sess.set(null)}};
+}
+
+function computeOwner(){
+  const a=ACC();if(!a){OWNER=false;return}
+  OWNER=BACK&&BACK.mode==='claude'?(typeof OWNER_CLAUDE!=='undefined'&&OWNER_CLAUDE):a.username===ADMIN_USERNAME.toLowerCase();
+}
+
+/* ---------- başlat ---------- */
+(async()=>{
+  try{BACK=FIREBASE_CONFIG?await initFirebase():initLocal()}catch(e){console.warn(e);showAuth('nodb');return}
+  db=BACK.db;
+  ME=await BACK.currentUid();logged=!!ME;
+  const sub=(path,fn)=>db.collection(path).onSnapshot(s=>{fn(s);M.ready.add(path);onData()},e=>console.warn(path,e));
+  sub('accounts',s=>{M.accounts={};s.docs.forEach(d=>M.accounts[d.id]=d.data())});
+  sub('classes',s=>M.classes=s.docs.map(d=>({id:d.id,...d.data()})));
+  sub('lessons',s=>M.lessons=s.docs.map(d=>({id:d.id,...d.data()})));
+  sub('members',s=>{M.members={};s.docs.forEach(d=>M.members[d.id]=d.data())});
+  sub('scores',s=>{M.scores={};s.docs.forEach(d=>M.scores[d.id]=d.data())});
+  sub('games',s=>{M.games={};s.docs.forEach(d=>M.games[d.id]=d.data())});
+  sub('assignments',s=>M.assigns=s.docs.map(d=>({id:d.id,...d.data()})));
+  sub('subs',s=>{M.subs={};s.docs.forEach(d=>M.subs[d.id]=d.data())});
+  sub('likes',s=>{M.likes={};s.docs.forEach(d=>M.likes[d.id]=d.data())});
+  db.doc('config/teachers').onSnapshot(s=>{M.teachers=(s.exists&&s.data().uids)||[];onData()},e=>console.warn(e));
+  setInterval(()=>{if(logged&&$('#play').hidden&&!$('#app').hidden){renderPanel();renderLessons()}},30000);
+})();
+</script>
+
+</body>
+</html>
